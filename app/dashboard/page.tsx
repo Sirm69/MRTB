@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, X, Loader2, LogOut } from 'lucide-react';
 import ActivitiesBox from "../components/ActivitiesBox";
@@ -19,7 +19,8 @@ const getProfessionSlug = (profession?: string) => {
   return "physiotherapy";
 };
 
-export default function DashboardPage() {
+// 1. We move the main dashboard logic into this internal component
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -595,5 +596,20 @@ export default function DashboardPage() {
 
       </div>
     </>
+  );
+}
+
+// 2. Wrap the component in Suspense for Next.js SSR build requirement!
+export default function DashboardPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="flex h-[80vh] items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5D9C0E]"></div>
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

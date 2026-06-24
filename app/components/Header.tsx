@@ -10,24 +10,18 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    // Sticky position enabled. 
-    // Note: Ensure parents do not have 'overflow-hidden' for stickiness to take effect.
     <header className="sticky top-0 w-full bg-white/95 backdrop-blur-md flex flex-col justify-center shadow-md border-b border-slate-200 z-[100]">
       
       {/* Decorative Background swooshes */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 h-full">
-        {/* THICKER LINES APPLIED HERE */}
-        {/* Top-right swoosh: Updated border from [3px] to [6px] and reduced opacity slightly to compensate for increased visual weight */}
         <div className="absolute -top-[300px] -right-[100px] w-[1200px] h-[800px] rounded-[100%] border-[6px] border-[#eaf2df] opacity-70" />
-        {/* Mid-right swoosh: Updated border from [2px] to [5px] and reduced opacity */}
         <div className="absolute -top-[500px] right-[200px] w-[1000px] h-[900px] rounded-[100%] border-[5px] border-[#f0f5e8] opacity-50" />
-        {/* Lower-right swoosh: Updated border from [4px] to [8px] and reduced opacity */}
         <div className="absolute top-[20px] -right-[200px] w-[600px] h-[800px] rounded-[100%] border-[8px] border-[#eaf2df] opacity-70" />
       </div>
 
       <div className="mx-auto w-full max-w-[1400px] px-6 md:px-12 relative z-10 flex justify-between items-center h-20 md:h-24">
         
-        {/* LOGO - Reduced size further to 52x52 */}
+        {/* LOGO */}
         <Link href="/" className="flex items-center shrink-0">
           <Image 
             src="/logo.png" 
@@ -84,7 +78,8 @@ const Header = () => {
                   Admin
                 </Link>
                 <div className="h-[1px] w-full bg-slate-50"></div>
-                <Link href="/login/field-team" className="px-5 py-3 text-sm text-gray-700 font-medium hover:bg-slate-50 hover:text-[#71b600] transition-colors border-l-2 border-transparent hover:border-[#71b600]">
+                {/* Updated the href right here 👇 */}
+                <Link href="/admin/login" className="px-5 py-3 text-sm text-gray-700 font-medium hover:bg-slate-50 hover:text-[#71b600] transition-colors border-l-2 border-transparent hover:border-[#71b600]">
                   Field Team
                 </Link>
               </div>

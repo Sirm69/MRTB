@@ -85,16 +85,15 @@ const Banner = () => {
 
     // The clean payload your backend will receive
     const payload = {
-      sector: sector.toLowerCase(),       // e.g., "government" or "private"
-      field: field.toLowerCase(),         // e.g., "academics" or "clinicals"
-      program: program.toLowerCase(),     // e.g., "diploma", "safe practice"
-      endpoint: endpoint.toLowerCase()    // e.g., "resource verification", "private clinic"
+      sector: sector.toLowerCase(),       
+      field: field.toLowerCase(),         
+      program: program.toLowerCase(),     
+      endpoint: endpoint.toLowerCase()    
     };
 
     console.log("Payload sending to backend:", payload);
 
     try {
-      // Replace this URL with your actual backend endpoint
       const response = await fetch('/api/v1/guidelines/download', {
         method: 'POST',
         headers: {
@@ -107,21 +106,17 @@ const Banner = () => {
         throw new Error('Failed to fetch the PDF');
       }
 
-      // Logic to force the browser to download the PDF Blob
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `guideline-${payload.sector}-${payload.program}.pdf`; // Dynamic file name
+      link.download = `guideline-${payload.sector}-${payload.program}.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(downloadUrl);
 
-      // Close modal on success
       setIsModalOpen(false);
-      
-      // Optional: Reset states so it's fresh next time it opens
       setSelectedCategory(null);
       setSelectedSubcategory(null);
 
@@ -148,7 +143,7 @@ const Banner = () => {
             MEDICAL REHABILITATION IN NIGERIA
           </h1>
           <p className="text-[11px] md:text-[14px] font-medium text-white/80 leading-relaxed max-w-[700px] mb-10 tracking-widest uppercase">
-            WE ACCREDIT AND GUIDE INSTITUTIONS OFFERING MEDICA REHABILITATION SERVICES<br className="hidden md:block" />
+            WE ACCREDIT AND REGULATE INSTITUTIONS OFFERING MEDICA REHABILITATION SERVICES<br className="hidden md:block" />
             TO ENSURE THEY MEET THE HIGHEST GLOBAL STANDARDS OF PATIENT<br className="hidden md:block" />
             SAFETY AND QUALITY CARE.
           </p>
@@ -172,13 +167,14 @@ const Banner = () => {
         </div>
       </section>
 
+      {/* MOBILE BANNER - Fixed the /admin/login paths right here 👇 */}
       <div style={{ backgroundColor: accentYellow }} className="block md:hidden py-3 px-4 shadow-inner relative z-20">
         <div className="flex items-center justify-center gap-4 sm:gap-6 text-[#1b1e15]">
           <Link href="/auth/login" className="text-[10px] font-black uppercase tracking-widest">Entity</Link>
           <span className="text-[#1b1e15]/30 font-light text-sm">|</span>
-          <Link href="/login/admin" className="text-[10px] font-black uppercase tracking-widest">Admin</Link>
+          <Link href="/admin/login" className="text-[10px] font-black uppercase tracking-widest">Admin</Link>
           <span className="text-[#1b1e15]/30 font-light text-sm">|</span>
-          <Link href="/login/field-team" className="text-[10px] font-black uppercase tracking-widest">Field Team</Link>
+          <Link href="/admin/login" className="text-[10px] font-black uppercase tracking-widest">Field Team</Link>
         </div>
       </div>
 
