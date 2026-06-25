@@ -34,5 +34,7 @@ COPY --from=builder /app/node_modules ./node_modules
 # Expose the port (Azure App Service will set the actual PORT env variable)
 EXPOSE 3000
 
+ENV NODE_ENV=production
+
 # Start Next.js, listening on the port provided by Azure (or default to 3000)
-CMD ["sh", "-c", "next start -p ${PORT:-3000}"]
+CMD ["npm", "start"]
