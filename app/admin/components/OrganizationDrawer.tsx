@@ -23,6 +23,10 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
   const [visitDate, setVisitDate] = useState("");
   const [adminComment, setAdminComment] = useState("");
 
+  // Interactive Calendar State
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -71,6 +75,17 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
     fetchUserDetails();
   }, [userId]);
 
+  // Sync Calendar view to the selected visitDate
+  useEffect(() => {
+    if (visitDate) {
+      const parts = visitDate.split('-');
+      if (parts.length === 3) {
+        setCalendarYear(parseInt(parts[0], 10));
+        setCalendarMonth(parseInt(parts[1], 10) - 1);
+      }
+    }
+  }, [visitDate]);
+
   const handleSaveData = async (payloadOverride: any, successMessage: string, shouldCloseDrawer = false) => {
     setIsUpdatingStatus(true);
     const token = localStorage.getItem('adminAccessToken') || sessionStorage.getItem('adminAccessToken');
@@ -116,9 +131,11 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
   const isLockedForReviewer = adminRole === 'admin_reviewer' && (currentStatus === 'recommended_accept' || currentStatus === 'recommended_reject' || currentStatus === 'approved' || currentStatus === 'rejected');
   const isLockedForRegistrar = adminRole === 'admin_registrar' && (currentStatus === 'approved' || currentStatus === 'rejected');
   
-  // NEW: Check if visit date is set for validation
+  // VALIDATION & ACCEPTANCE LOGIC (Separated by Phase)
   const hasVisitDate = visitDate !== "" && visitDate !== null;
-  const disableAcceptance = currentEst <= 0 || currentLog <= 0 || !hasVisitDate || isUpdatingStatus;
+  const disableAcceptance = isUpdatingStatus || 
+    (activePhase === 1 && (currentEst <= 0 || currentLog <= 0)) || 
+    (activePhase === 2 && !hasVisitDate);
 
   // Visit Date Logic (Phase 2)
   const currentDate = visitDate || "";
@@ -129,12 +146,27 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
     await handleSaveData({ visit_date: currentDate }, "Visitation schedule saved!", false);
   };
 
+  const handlePrevMonth = () => {
+    if (calendarMonth === 0) {
+      setCalendarMonth(11);
+      setCalendarYear(calendarYear - 1);
+    } else {
+      setCalendarMonth(calendarMonth - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (calendarMonth === 11) {
+      setCalendarMonth(0);
+      setCalendarYear(calendarYear + 1);
+    } else {
+      setCalendarMonth(calendarMonth + 1);
+    }
+  };
+
   const renderCalendar = () => {
-    const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
     const days = [];
@@ -142,8 +174,8 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
     for (let i = 0; i < firstDay; i++) days.push(<div key={`empty-${i}`} />);
     for (let i = 1; i <= daysInMonth; i++) {
       const d = String(i).padStart(2, '0');
-      const m = String(currentMonth + 1).padStart(2, '0');
-      const dateStr = `${currentYear}-${m}-${d}`;
+      const m = String(calendarMonth + 1).padStart(2, '0');
+      const dateStr = `${calendarYear}-${m}-${d}`;
       const isSelected = visitDate === dateStr;
       days.push(
         <button
@@ -160,12 +192,30 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
     return (
       <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-[11px] text-gray-800 font-bold">{monthNames[currentMonth]} {currentYear}</span>
+          <button onClick={handlePrevMonth} disabled={!canEditDate || activePhase === 1} className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent transition-colors">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <span className="text-[11px] text-gray-800 font-bold">{monthNames[calendarMonth]} {calendarYear}</span>
+          <button onClick={handleNextMonth} disabled={!canEditDate || activePhase === 1} className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent transition-colors">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
         </div>
         <div className="grid grid-cols-7 gap-0.5 text-center mb-1.5">
           {dayNames.map(day => <div key={day} className="text-[8px] text-gray-400 uppercase">{day}</div>)}
         </div>
         <div className="grid grid-cols-7 gap-y-0.5 gap-x-0.5">{days}</div>
+
+        {/* NATIVE DATE INPUT FOR MM/DD/YYYY */}
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <label className="text-[9px] text-gray-500 mb-1 block uppercase font-bold">Or enter date manually</label>
+          <input 
+            type="date" 
+            value={visitDate}
+            onChange={(e) => setVisitDate(e.target.value)}
+            disabled={!canEditDate || activePhase === 1}
+            className="w-full px-2 py-1.5 rounded-md border border-gray-200 text-[11px] text-gray-700 outline-none focus:border-[#5D9C0E] disabled:bg-gray-50 transition-colors"
+          />
+        </div>
       </div>
     );
   };
@@ -253,11 +303,20 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
                     {/* UNIFIED DECISION ACTION BUTTONS */}
                     <div className="flex flex-col gap-2 mt-5">
                       
-                      {/* NEW: Warning Message if visitation date is missing */}
-                      {!hasVisitDate && activePhase === 1 && !isLockedForReviewer && !isLockedForRegistrar && adminRole !== 'admin_accreditation' && (
-                        <div className="mb-1 text-center animate-in fade-in">
+                      {/* PHASE 1 WARNING: Missing Cost */}
+                      {activePhase === 1 && (currentEst <= 0 || currentLog <= 0) && !isLockedForReviewer && !isLockedForRegistrar && adminRole !== 'admin_accreditation' && (
+                        <div className="mb-2 text-center animate-in fade-in">
                           <span className="text-[10px] text-red-600 font-bold bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-100 flex items-center justify-center gap-1.5 w-max mx-auto shadow-sm">
-                            <AlertTriangle size={12} className="text-red-500" /> Schedule visitation date before accepting.
+                            <AlertTriangle size={12} className="text-red-500" /> Please set cost estimates before accepting.
+                          </span>
+                        </div>
+                      )}
+
+                      {/* PHASE 2 WARNING: Missing Visit Date */}
+                      {activePhase === 2 && !hasVisitDate && !isLockedForReviewer && !isLockedForRegistrar && adminRole !== 'admin_accreditation' && (
+                        <div className="mb-2 text-center animate-in fade-in">
+                          <span className="text-[10px] text-red-600 font-bold bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-100 flex items-center justify-center gap-1.5 w-max mx-auto shadow-sm">
+                            <AlertTriangle size={12} className="text-red-500" /> Please schedule a visitation date to recommend acceptance.
                           </span>
                         </div>
                       )}

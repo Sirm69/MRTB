@@ -143,8 +143,7 @@ const Banner = () => {
             MEDICAL REHABILITATION IN NIGERIA
           </h1>
           <p className="text-[11px] md:text-[14px] font-medium text-white/80 leading-relaxed max-w-[700px] mb-10 tracking-widest uppercase">
-            WE ACCREDIT AND REGULATE INSTITUTIONS OFFERING MEDICA REHABILITATION SERVICES<br className="hidden md:block" />
-            TO ENSURE THEY MEET THE HIGHEST GLOBAL STANDARDS OF PATIENT<br className="hidden md:block" />
+            WE ACCREDIT AND REGULATE INSTITUTIONS OFFERING MEDICAL REHABILITATION SERVICES TO ENSURE THEY MEET THE HIGHEST GLOBAL STANDARDS OF PATIENT<br className="hidden md:block" />
             SAFETY AND QUALITY CARE.
           </p>
 
