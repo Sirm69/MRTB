@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mrtb-frontend-accreditation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mrtb-frontend-accreditation
+  template:
+    metadata:
+      labels:
+        app: mrtb-frontend-accreditation
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: mrtb-frontend-accreditation
+          image: "mrtblicensingacr.azurecr.io/mrtb-frontend-accreditation:BuildNumber"
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: 500m
+              memory: 2048Mi
+            requests:
+              cpu: 250m
+              memory: 1024Mi
+      imagePullSecrets:
+        - name: acr-secret
