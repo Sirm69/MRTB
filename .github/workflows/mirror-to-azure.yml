@@ -14,7 +14,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Push main to Azure development
+      - name: Push to Azure
         run: |
           git remote add azure https://${{ secrets.AZURE_PAT }}@dev.azure.com/MRTB-Licensing-Project/MRTB%20Licensing%20Project/_git/MRTB-Accreditaion-FE
           git push azure main:development
