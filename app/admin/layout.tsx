@@ -3,6 +3,7 @@
 import React, { useState, createContext, useContext, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Users, LayoutDashboard, ClipboardList, Calendar, BarChart3, Settings } from "lucide-react";
+import NextTopLoader from 'nextjs-toploader'; // <-- The loader is imported here!
 
 // Create a context so the Page can control the Sidebar in the Layout
 const MobileMenuContext = createContext({
@@ -32,7 +33,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // 👇 THE FIX: If we are on the login page, don't show the sidebar layout at all!
   if (pathname === '/admin/login') {
-    return <>{children}</>;
+    return (
+      <>
+        {/* Added the loader here too so it works when clicking "Login" */}
+        <NextTopLoader color="#5D9C0E" height={3} showSpinner={false} shadow="0 0 10px #5D9C0E,0 0 5px #5D9C0E" />
+        {children}
+      </>
+    );
   }
 
   const SidebarItem = ({ icon, label, path }: SidebarItemProps) => {
@@ -63,6 +70,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <MobileMenuContext.Provider value={{ setIsMobileMenuOpen }}>
+      {/* The sleek, thin Top Loader in your brand green for the Admin Portal */}
+      <NextTopLoader 
+        color="#5D9C0E" 
+        initialPosition={0.08} 
+        crawlSpeed={200} 
+        height={3} 
+        crawl={true} 
+        showSpinner={false} 
+        easing="ease" 
+        speed={200} 
+        shadow="0 0 10px #5D9C0E,0 0 5px #5D9C0E" 
+      />
+
       <div
         className="flex h-screen w-full overflow-hidden text-gray-800 bg-[#f1f4ee] relative"
         style={{ fontFamily: "'Outfit', sans-serif" }}

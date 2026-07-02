@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { CheckCircle2, X, Loader2, LogOut } from 'lucide-react';
 import ActivitiesBox from "../components/ActivitiesBox";
 import { useMobileMenu } from "./layout";
@@ -56,9 +57,9 @@ function DashboardContent() {
   const isAssessmentApproved = assessmentStatus === "approved";
   const isAssessmentRejected = assessmentStatus === "rejected"; 
   
-  // Phase 3: Visitation
-  const isVisitationAccepted = userData?.visitation_accepted || false;
-  const isRescheduled = userData?.is_rescheduled || false;
+  // Phase 3: Visitation (THE FIX: Force these to be false unless fully approved!)
+  const isVisitationAccepted = (userData?.visitation_accepted || false) && isAssessmentApproved;
+  const isRescheduled = (userData?.is_rescheduled || false) && isAssessmentApproved;
 
   // Financial Data
   const registrationCost = userData?.cost_estimate || 0;
@@ -119,33 +120,6 @@ function DashboardContent() {
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => window.location.reload(), 500);
-  };
-
-  // ==========================================
-  // DYNAMIC FORM ROUTING (INCLUDING APPEALS)
-  // ==========================================
-  const handleNavigateToAssessment = () => {
-    const isAcademic = 
-      userData?.field?.toLowerCase() === "academics" || 
-      userData?.category?.toLowerCase().includes("academic");
-
-    const categorySlug = isAcademic ? "academic" : "clinical";
-    const professionSlug = getProfessionSlug(userData?.profession);
-
-    // Routes perfectly to: /forms/assessment/speech-therapy/academic etc.
-    router.push(`/forms/assessment/${professionSlug}/${categorySlug}`);
-  };
-
-  const handleNavigateToPreAssessment = () => {
-    const isAcademic = 
-      userData?.field?.toLowerCase() === "academics" || 
-      userData?.category?.toLowerCase().includes("academic");
-
-    if (isAcademic) {
-      router.push("/forms/preassessment/academic");
-    } else {
-      router.push("/forms/preassessment/clinical");
-    }
   };
 
   const formatVisitDate = (dateString: string) => {
@@ -251,6 +225,19 @@ function DashboardContent() {
     );
   }
 
+  // ==========================================
+  // DYNAMIC FORM URL CALCULATIONS (For Native Links)
+  // ==========================================
+  const isAcademic = 
+    userData?.field?.toLowerCase() === "academics" || 
+    userData?.category?.toLowerCase().includes("academic");
+
+  const categorySlug = isAcademic ? "academic" : "clinical";
+  const professionSlug = getProfessionSlug(userData?.profession);
+
+  const preAssessmentUrl = isAcademic ? "/forms/preassessment/academic" : "/forms/preassessment/clinical";
+  const assessmentUrl = `/forms/assessment/${professionSlug}/${categorySlug}`;
+
   // UPDATED ALERT MESSAGES (Handles Rejections)
   let alertMessage = "Please kindly complete the Pre-assessment form";
   if (isRescheduled && !isVisitationAccepted) alertMessage = "🚨 Your visitation date has been rescheduled! Please review and accept the new date.";
@@ -301,7 +288,7 @@ function DashboardContent() {
             </button>
           </div>
           
-          {/* DYNAMIC TOP BUTTON / PILL (UPDATED WITH REJECTIONS) */}
+          {/* DYNAMIC TOP BUTTON / PILL */}
           {isVisitationAccepted ? (
             <div className="w-full bg-[#E8F5E9] text-[#5D9C0E] border border-[#5D9C0E] px-5 py-3 md:py-2.5 rounded-full text-[13px] font-bold shadow-sm flex justify-center items-center gap-2 whitespace-nowrap">
               <CheckCircle2 size={16} /> Visitation Confirmed
@@ -319,9 +306,9 @@ function DashboardContent() {
               <span className="w-2 h-2 bg-white rounded-full inline-block animate-pulse"></span> Assessment Under Review
             </div>
           ) : isApproved && isFullyPaid ? (
-            <button onClick={handleNavigateToAssessment} className="w-full bg-[#5D9C0E] hover:bg-[#528a0c] transition text-white px-5 py-3 md:py-2.5 rounded-full text-[13px] font-bold shadow-md text-center whitespace-nowrap">
+            <Link href={assessmentUrl} className="w-full bg-[#5D9C0E] hover:bg-[#528a0c] transition text-white px-5 py-3 md:py-2.5 rounded-full text-[13px] font-bold shadow-md flex items-center justify-center whitespace-nowrap">
               Assessment form
-            </button>
+            </Link>
           ) : isApproved ? (
             <div className="w-full bg-[#E8F5E9] text-[#5D9C0E] border border-[#5D9C0E] px-5 py-3 md:py-2.5 rounded-full text-[13px] font-bold shadow-sm flex justify-center items-center gap-2">
               <CheckCircle2 size={16} /> Approved
@@ -335,14 +322,14 @@ function DashboardContent() {
               <span className="w-2 h-2 bg-white rounded-full inline-block animate-pulse"></span> Under Review
             </div>
           ) : (
-            <button onClick={handleNavigateToPreAssessment} className="w-full bg-[#5D9C0E] hover:bg-[#528a0c] transition text-white px-5 py-3 md:py-2.5 rounded-full text-[13px] font-semibold shadow-md text-center whitespace-nowrap">
+            <Link href={preAssessmentUrl} className="w-full bg-[#5D9C0E] hover:bg-[#528a0c] transition text-white px-5 py-3 md:py-2.5 rounded-full text-[13px] font-semibold shadow-md flex items-center justify-center whitespace-nowrap">
               Pre-assessment form
-            </button>
+            </Link>
           )}
         </div>
       </div>
 
-      {/* ON-LOAD POPUP ALERT (UPDATED FOR REJECTIONS) */}
+      {/* ON-LOAD POPUP ALERT */}
       {showAlert && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-sm transition-opacity px-4">
           <div className="bg-white px-6 py-6 rounded-2xl shadow-2xl flex flex-col items-center text-center w-full max-w-[380px] animate-in fade-in zoom-in-95 duration-300">
@@ -437,7 +424,7 @@ function DashboardContent() {
               <li className="pl-1">{userData?.sub_category || "Tier"}</li>
             </ul>
             
-            {/* DYNAMIC CARD BUTTON (UPDATED WITH REJECTIONS AND APPEALS) */}
+            {/* DYNAMIC CARD BUTTON */}
             {isVisitationAccepted ? (
                <button className="border border-gray-400 text-gray-500 bg-white px-6 py-2.5 rounded-full text-xs font-bold w-full sm:w-max cursor-default transition-colors">
                  Visitation in view
@@ -447,33 +434,33 @@ function DashboardContent() {
                  Assessment Approved <CheckCircle2 size={14} />
                </button>
             ) : isAssessmentRejected ? (
-               <button onClick={handleNavigateToAssessment} className="border-2 border-red-500 bg-red-50 text-red-600 px-6 py-2.5 rounded-full text-xs font-bold w-full sm:w-max shadow-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
+               <Link href={assessmentUrl} className="border-2 border-red-500 bg-red-50 text-red-600 px-6 py-2.5 rounded-full text-xs font-bold w-full sm:w-max shadow-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
                  Appeal Assessment <X size={14} />
-               </button>
+               </Link>
             ) : isAssessmentSubmitted ? (
                <button className="border border-[#5D9C0E] text-[#5D9C0E] bg-[#EEF6DF] px-6 py-2.5 rounded-full text-xs font-bold w-full sm:w-max cursor-default flex items-center justify-center gap-2">
                  Assessment Submitted <CheckCircle2 size={14} />
                </button>
             ) : isApproved && isFullyPaid ? (
-              <button onClick={handleNavigateToAssessment} className="bg-[#5D9C0E] text-white px-6 py-2.5 rounded-full text-xs font-bold w-full sm:w-max shadow-md transition-colors hover:bg-[#528a0c]">
+              <Link href={assessmentUrl} className="bg-[#5D9C0E] text-white px-6 py-2.5 rounded-full text-xs font-bold w-full sm:w-max shadow-md transition-colors hover:bg-[#528a0c] flex items-center justify-center">
                 Proceed to assessment form
-              </button>
+              </Link>
             ) : isApproved ? (
               <button className="border-2 border-[#5D9C0E] bg-[#FAFCF8] text-[#5D9C0E] px-6 py-2.5 rounded-full text-xs font-bold w-full sm:w-max cursor-default flex items-center justify-center gap-2">
                 Application Approved <CheckCircle2 size={14} />
               </button>
             ) : isRejected ? (
-              <button onClick={handleNavigateToPreAssessment} className="border-2 border-red-500 bg-red-50 text-red-600 px-6 py-2.5 rounded-full text-xs font-bold w-full sm:w-max shadow-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
+              <Link href={preAssessmentUrl} className="border-2 border-red-500 bg-red-50 text-red-600 px-6 py-2.5 rounded-full text-xs font-bold w-full sm:w-max shadow-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
                 Appeal Application <X size={14} />
-              </button>
+              </Link>
             ) : isUnderReview ? (
-              <button className="border border-gray-400 text-gray-500 px-6 py-2.5 rounded-full text-xs font-semibold w-full sm:w-max cursor-not-allowed">
+              <button className="border border-gray-400 text-gray-500 px-6 py-2.5 rounded-full text-xs font-semibold w-full sm:w-max cursor-not-allowed flex items-center justify-center">
                 Application Under Review
               </button>
             ) : (
-              <button onClick={handleNavigateToPreAssessment} className="border border-[#5D9C0E] text-[#5D9C0E] px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#f8fcf5] transition w-full sm:w-max">
+              <Link href={preAssessmentUrl} className="border border-[#5D9C0E] text-[#5D9C0E] px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-[#f8fcf5] transition w-full sm:w-max flex items-center justify-center">
                 Complete Application
-              </button>
+              </Link>
             )}
           </div>
         </div>

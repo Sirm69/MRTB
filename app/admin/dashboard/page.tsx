@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // <-- Imported Link for native routing!
 import { Calendar, Bell, Download, Building2, CalendarDays, Loader2, Filter, AlertCircle, CheckCircle2, Users, LogOut, XCircle } from 'lucide-react';
 import OrganizationDrawer from '../components/OrganizationDrawer';
 
@@ -13,7 +14,8 @@ interface ApplicationData {
   category: string;
   status: string;
   assessment_status: string | null;
-  is_appeal?: boolean; // NEW: Backend should send this as true if the user is resubmitting an appeal
+  is_appeal?: boolean;
+  is_paid?: boolean; 
 }
 
 export default function AdminDashboard() {
@@ -24,7 +26,6 @@ export default function AdminDashboard() {
   const [adminRole, setAdminRole] = useState<string>(''); 
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   
-  // NEW: Added "rejected" to the activeTab state types
   const [activeTab, setActiveTab] = useState<"action_required" | "all" | "rejected">("action_required");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentFilter, setCurrentFilter] = useState("all");
@@ -84,13 +85,11 @@ export default function AdminDashboard() {
 
   const actionRequiredCount = applications.filter(isActionRequired).length;
   
-  // NEW: Calculate the total number of rejected applications for the tab counter
   const rejectedCount = applications.filter(app => {
     const activeStatus = app.status === 'approved' && app.assessment_status ? app.assessment_status : app.status;
     return activeStatus === 'rejected';
   }).length;
 
-  // NEW: Added the filter condition for the 'rejected' tab
   const tabFilteredApps = applications.filter(app => {
     const activeStatus = app.status === 'approved' && app.assessment_status ? app.assessment_status : app.status;
     if (activeTab === 'all') return true;
@@ -109,7 +108,7 @@ export default function AdminDashboard() {
     return true;
   });
 
-  const formatStatus = (status: string, assessmentStatus: string | null) => {
+  const formatStatus = (status: string, assessmentStatus: string | null, isPaid: boolean = false) => {
     if (assessmentStatus) {
       switch(assessmentStatus) {
         case 'submitted': 
@@ -132,7 +131,9 @@ export default function AdminDashboard() {
       case 'recommended_reject': 
         return <span className="text-purple-600 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Awaiting Registrar (Reject)</span>;
       case 'approved': 
-        return <span className="text-green-600 bg-green-50 border border-green-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Pending Payment</span>;
+        return isPaid 
+          ? <span className="text-teal-600 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Paid - Await Assessment</span>
+          : <span className="text-green-600 bg-green-50 border border-green-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Pending Payment</span>;
       case 'rejected': 
         return <span className="text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Final Rejected</span>;
       default: 
@@ -146,12 +147,13 @@ export default function AdminDashboard() {
       {/* TOP NAVIGATION */}
       <div className="flex justify-end items-center mb-6 gap-2 md:gap-5 w-full">
         {adminRole === 'admin_reviewer' && (
-          <button 
-            onClick={() => router.push('/admin/manage-admins')}
+          // 👇 CONVERTED TO <Link> HERE
+          <Link 
+            href="/admin/manage-admins"
             className="hidden md:flex items-center gap-2 bg-white px-4 h-[52px] rounded-full shadow-sm hover:shadow-md transition-shadow border border-gray-100 font-bold text-[13px] text-gray-700"
           >
             <Users size={18} className="text-[#65A30D]" /> Manage Admins
-          </button>
+          </Link>
         )}
 
         <button className="w-[38px] h-[38px] md:w-[52px] md:h-[52px] bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow shrink-0">
@@ -208,7 +210,6 @@ export default function AdminDashboard() {
           )}
         </button>
         
-        {/* NEW: Rejected Applications Tab */}
         <button onClick={() => {setActiveTab('rejected'); setCurrentFilter('all');}} className={`relative px-4 py-2 md:px-6 md:py-3 rounded-full font-bold text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-all ${activeTab === 'rejected' ? 'bg-red-500 text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-50 shadow-sm'}`}>
           <XCircle size={14} className="md:w-4 md:h-4" /> Rejected
           {rejectedCount > 0 && (
@@ -267,7 +268,6 @@ export default function AdminDashboard() {
                   <div key={row.id} className={`flex items-center px-6 md:px-8 py-4 md:py-5 hover:bg-gray-50/50 transition-colors ${index % 2 !== 0 ? 'bg-[#FAFCF8]' : 'bg-white'}`}>
                     <div className="w-[50px] md:w-[60px]"><input type="checkbox" className="w-4 h-4 md:w-5 md:h-5 rounded-[4px] border-2 border-gray-300 text-[#65A30D]" /></div>
                     
-                    {/* NEW: Modified Name Column to show New/Appeal badges */}
                     <div onClick={() => setSelectedUserId(row.id)} className="w-[180px] md:w-[240px] cursor-pointer pr-2 flex flex-col items-start gap-1">
                       <span className="text-[14px] md:text-[15px] text-[#65A30D] hover:underline font-bold leading-tight">{row.name}</span>
                       {isActionRequired(row) && (
@@ -278,7 +278,9 @@ export default function AdminDashboard() {
                     </div>
                     
                     <div className="w-[140px] md:w-[160px] text-[13px] md:text-[14px] text-gray-500 font-medium">{row.profession}</div>
-                    <div className="w-[180px] md:w-[200px] pr-2">{formatStatus(row.status, row.assessment_status)}</div>
+                    
+                    <div className="w-[180px] md:w-[200px] pr-2">{formatStatus(row.status, row.assessment_status, row.is_paid)}</div>
+                    
                     <div className="flex-1 text-[13px] md:text-[14px] text-gray-500 truncate pr-4">{row.email}</div>
                     <div className="pr-4">
                       <button 
