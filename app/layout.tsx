@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import HeaderWrapper from "@/components/HeaderWrapper"; 
 import NextTopLoader from 'nextjs-toploader'; // <-- The new loader package!
+// Triggering Next.js dev rebuild for CSS refresh.
+import GlobalAlertProvider from "./components/GlobalAlertProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,9 +40,11 @@ export default function RootLayout({
         {/* This wrapper handles the "Home Page Only" logic */}
         <HeaderWrapper />
         
-        <main>
-          {children}
-        </main>
+        <GlobalAlertProvider>
+          <main>
+            {children}
+          </main>
+        </GlobalAlertProvider>
       </body>
     </html>
   );

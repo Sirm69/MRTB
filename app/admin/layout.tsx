@@ -2,8 +2,18 @@
 
 import React, { useState, createContext, useContext, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Users, LayoutDashboard, ClipboardList, Calendar, BarChart3, Settings } from "lucide-react";
-import NextTopLoader from 'nextjs-toploader'; // <-- The loader is imported here!
+import Link from "next/link";
+import { 
+  Users, 
+  LayoutDashboard, 
+  ClipboardList,
+  CalendarDays, 
+  BarChart3, 
+  Settings,
+  MessageSquare,
+  LogOut 
+} from "lucide-react";
+import NextTopLoader from 'nextjs-toploader';
 
 // Create a context so the Page can control the Sidebar in the Layout
 const MobileMenuContext = createContext({
@@ -11,12 +21,6 @@ const MobileMenuContext = createContext({
 });
 
 export const useMobileMenu = () => useContext(MobileMenuContext);
-
-interface SidebarItemProps {
-  icon: React.ReactNode;
-  label: string;
-  path: string;
-}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -31,30 +35,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setAdminRole(role);
   }, []);
 
-  // 👇 THE FIX: If we are on the login page, don't show the sidebar layout at all!
+  // If we are on the login page, don't show the sidebar layout at all!
   if (pathname === '/admin/login') {
     return (
       <>
-        {/* Added the loader here too so it works when clicking "Login" */}
         <NextTopLoader color="#5D9C0E" height={3} showSpinner={false} shadow="0 0 10px #5D9C0E,0 0 5px #5D9C0E" />
         {children}
       </>
     );
   }
 
-  const SidebarItem = ({ icon, label, path }: SidebarItemProps) => {
+  const handleLogout = () => {
+    localStorage.removeItem('adminAccessToken');
+    localStorage.removeItem('adminRefreshToken');
+    localStorage.removeItem('adminRole');
+    sessionStorage.removeItem('adminAccessToken');
+    sessionStorage.removeItem('adminRefreshToken');
+    sessionStorage.removeItem('adminRole');
+    router.push('/admin/login');
+  };
+
+  const SidebarItem = ({ icon, label, path }: { icon: React.ReactNode; label: string; path: string }) => {
     const active = pathname === path;
+    
     return (
-      <button
-        onClick={() => {
-          router.push(path);
-          setIsMobileMenuOpen(false);
-        }}
+      <Link
+        href={path}
+        onClick={() => setIsMobileMenuOpen(false)}
         className={`flex items-center w-full transition-all duration-300 rounded-xl ${
           isExpanded || isMobileMenuOpen ? "px-4 py-3.5 gap-4" : "justify-center p-3.5 gap-0"
         } ${
           active
-            ? "bg-white/20 text-white shadow-sm"
+            ? "bg-white/20 text-white font-semibold shadow-sm"
             : "text-white/80 hover:text-white hover:bg-white/10"
         }`}
       >
@@ -64,13 +76,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {label}
           </span>
         )}
-      </button>
+      </Link>
     );
   };
 
   return (
     <MobileMenuContext.Provider value={{ setIsMobileMenuOpen }}>
-      {/* The sleek, thin Top Loader in your brand green for the Admin Portal */}
+      {/* Sleek top loader in MRTB Green */}
       <NextTopLoader 
         color="#5D9C0E" 
         initialPosition={0.08} 
@@ -97,13 +109,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* SIDEBAR */}
         <aside
-          className={`absolute md:relative inset-y-0 left-0 transform transition-all duration-300 ease-in-out bg-[#5D9C0E] h-full flex flex-col py-8 z-50 shrink-0 shadow-2xl md:shadow-none ${
+          className={`absolute md:relative inset-y-0 left-0 transform transition-all duration-300 ease-in-out bg-[#5D9C0E] h-full flex flex-col py-6 z-50 shrink-0 shadow-2xl md:shadow-none ${
             isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 ${
             isExpanded || isMobileMenuOpen ? "w-[260px]" : "w-[88px]"
           }`}
         >
-          <div className="flex flex-col w-full px-4 gap-8">
+          <div className="flex flex-col w-full px-4 gap-8 overflow-y-auto no-scrollbar">
             
             {/* Header (Hamburger + MENU) */}
             <button
@@ -126,20 +138,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Nav Items */}
             <div className="w-full flex flex-col gap-2">
               <SidebarItem label="Dashboard" path="/admin/dashboard" icon={<LayoutDashboard size={22} />} />
+              <SidebarItem label="All Applications" path="/admin/applications" icon={<ClipboardList size={22} />} />
               
               {/* Conditionally reveal Manage Admins to Super Admin only */}
               {adminRole === 'admin_reviewer' && (
                 <SidebarItem label="Manage Admins" path="/admin/manage-admins" icon={<Users size={22} />} />
               )}
 
-              <SidebarItem label="Applications" path="/admin/applications" icon={<ClipboardList size={22} />} />
-              <SidebarItem label="Schedule" path="/admin/schedule" icon={<Calendar size={22} />} />
-              <SidebarItem label="Analytics" path="/admin/analytics" icon={<BarChart3 size={22} />} />
+              <SidebarItem label="Inspection Calendar" path="/admin/schedule" icon={<CalendarDays size={22} />} />
+              <SidebarItem label="System Analytics" path="/admin/analytics" icon={<BarChart3 size={22} />} />
+              <SidebarItem label="Support Inbox" path="/admin/messages" icon={<MessageSquare size={22} />} />
               
               <div className={`border-t border-white/20 my-4 mx-auto transition-all duration-300 ${isExpanded || isMobileMenuOpen ? "w-full" : "w-10"}`}></div>
               
               <SidebarItem label="Profile Settings" path="/admin/settings" icon={<Settings size={22} />} />
             </div>
+          </div>
+
+          {/* Logout button at the bottom */}
+          <div className={`w-full px-4 mt-auto pt-4 flex ${isExpanded || isMobileMenuOpen ? "justify-start" : "justify-center"}`}>
+            <button 
+              onClick={handleLogout}
+              className={`bg-[#4d820c] hover:bg-[#3f6b09] transition rounded-xl text-white/95 shadow-sm flex items-center gap-4 ${
+                isExpanded || isMobileMenuOpen ? "px-4 py-3.5 w-full" : "p-3.5"
+              }`}
+              title="Log Out"
+            >
+              <LogOut size={20} className="shrink-0" />
+              {(isExpanded || isMobileMenuOpen) && <span className="text-[15px] font-normal tracking-wide">Log Out</span>}
+            </button>
           </div>
         </aside>
 

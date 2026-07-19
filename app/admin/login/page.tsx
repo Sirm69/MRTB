@@ -48,6 +48,7 @@ export default function AdminLoginPage() {
         if (data.access_token) storage.setItem('adminAccessToken', data.access_token);
         if (data.refresh_token) storage.setItem('adminRefreshToken', data.refresh_token);
         if (data.role) storage.setItem('adminRole', data.role); // This tells the dashboard who it is!
+        storage.setItem('adminEmail', email);
 
         setMessage("Admin authentication successful!");
         setMessageType("success");
@@ -56,6 +57,8 @@ export default function AdminLoginPage() {
         setTimeout(() => {
           if (data.role === 'admin_accreditation') {
             router.push('/accreditation/dashboard');
+          } else if (data.role === 'admin_field' || data.role === 'Field Team') {
+            router.push('/field-team/dashboard');
           } else {
             router.push('/admin/dashboard');
           }
@@ -215,12 +218,12 @@ export default function AdminLoginPage() {
 
         {/* MESSAGE SECTION */}
         {message && (
-          <div className={`mt-6 flex items-center justify-center gap-2 px-5 py-3 rounded-md text-center text-sm font-medium max-w-md transition-all duration-300 ${
+          <div className={`mt-5 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-center text-[11px] font-bold max-w-xs transition-all duration-300 ${
             messageType === "success"
-              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-              : "bg-red-100 text-red-800 border border-red-200"
+              ? "bg-[#EEF6DF] text-[#65A30D] border border-[#65A30D]/30"
+              : "bg-red-50 text-red-600 border border-red-200"
           }`}>
-            {messageType === "error" && <XCircle size={16} className="text-red-600" />}
+            {messageType === "error" && <XCircle size={14} className="text-red-500 shrink-0" />}
             {message}
           </div>
         )}

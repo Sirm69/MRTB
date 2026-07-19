@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
+import AlertModal from '../../components/AlertModal';
 
 export default function OTPPage() {
   const brandGreen = "#066936";
@@ -12,6 +13,9 @@ export default function OTPPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Custom Alert Modal State
+  const [customAlert, setCustomAlert] = useState<{ isOpen: boolean; message: string; type?: 'success' | 'error' | 'warning' }>({ isOpen: false, message: "" });
 
   const handleChange = (index: number, value: string) => {
     if (isNaN(Number(value))) return;
@@ -56,7 +60,7 @@ export default function OTPPage() {
     const otpValue = otp.join('');
     
     if (otpValue.length < 6) {
-      alert("Please enter the full 6-digit code.");
+      setCustomAlert({ isOpen: true, message: "Please enter the full 6-digit code.", type: "error" });
       return;
     }
 
@@ -65,7 +69,7 @@ export default function OTPPage() {
     const email = localStorage.getItem('userEmailForOTP');
 
     if (!email) {
-      alert("Session expired or email missing. Please try registering again.");
+      setCustomAlert({ isOpen: true, message: "Session expired or email missing. Please try registering again.", type: "error" });
       setLoading(false);
       return;
     }
@@ -89,11 +93,11 @@ export default function OTPPage() {
         setIsVerified(true);
         localStorage.removeItem('userEmailForOTP');
       } else {
-        alert(data.message || "Verification failed. Please check the code.");
+        setCustomAlert({ isOpen: true, message: data.message || "Verification failed. Please check the code.", type: "error" });
       }
     } catch (err) {
       console.error("API Error:", err);
-      alert("Network error. Please try again.");
+      setCustomAlert({ isOpen: true, message: "Network error. Please try again.", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -103,7 +107,7 @@ export default function OTPPage() {
     const email = localStorage.getItem('userEmailForOTP');
 
     if (!email) {
-      alert("Registration data expired. Please register again.");
+      setCustomAlert({ isOpen: true, message: "Registration data expired. Please register again.", type: "error" });
       return;
     }
 
@@ -120,13 +124,13 @@ export default function OTPPage() {
       });
 
       if (response.ok) {
-        alert("A new OTP has been sent to your email.");
+        setCustomAlert({ isOpen: true, message: "A new OTP has been sent to your email.", type: "success" });
       } else {
         const data = await response.json();
-        alert(data.message || "Failed to resend OTP.");
+        setCustomAlert({ isOpen: true, message: data.message || "Failed to resend OTP.", type: "error" });
       }
     } catch (err) {
-      alert("Failed to resend OTP due to network error.");
+      setCustomAlert({ isOpen: true, message: "Failed to resend OTP due to network error.", type: "error" });
     } finally {
       setResendLoading(false);
     }
@@ -255,6 +259,14 @@ export default function OTPPage() {
           </div>
         )}
       </main>
+
+      {/* CUSTOM ALERT MODAL */}
+      <AlertModal 
+        isOpen={customAlert.isOpen} 
+        message={customAlert.message} 
+        type={customAlert.type} 
+        onClose={() => setCustomAlert(prev => ({ ...prev, isOpen: false }))} 
+      />
     </div>
   );
 }

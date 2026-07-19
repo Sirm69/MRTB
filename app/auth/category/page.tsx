@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, ChevronDown, Loader2 } from 'lucide-react';
+import AlertModal from '../../components/AlertModal';
 
 export default function CategoryPage() {
   const brandGreen = "#066936"; 
@@ -10,6 +11,9 @@ export default function CategoryPage() {
   const [logoError, setLogoError] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Custom Alert Modal State
+  const [customAlert, setCustomAlert] = useState<{ isOpen: boolean; message: string; type?: 'success' | 'error' | 'warning' }>({ isOpen: false, message: "" });
 
   // --- Profession State ---
   const [professionOpen, setProfessionOpen] = useState(false);
@@ -104,7 +108,7 @@ export default function CategoryPage() {
     e.preventDefault();
 
     if (!selectedCategory || !selectedTier || !profession) {
-      alert("Please fill in all fields.");
+      setCustomAlert({ isOpen: true, message: "Please fill in all fields.", type: "error" });
       return;
     }
 
@@ -113,7 +117,7 @@ export default function CategoryPage() {
     try {
       const existingDataStr = localStorage.getItem('pendingRegistration');
       if (!existingDataStr) {
-        alert("Registration data missing. Please go back to the first step.");
+        setCustomAlert({ isOpen: true, message: "Registration data missing. Please go back to the first step.", type: "error" });
         setLoading(false);
         return;
       }
@@ -154,11 +158,11 @@ export default function CategoryPage() {
         localStorage.removeItem('pendingRegistration');
         setIsSubmitted(true);
       } else {
-        alert(`Registration failed: ${result.message || "Please check your information."}`);
+        setCustomAlert({ isOpen: true, message: `Registration failed: ${result.message || "Please check your information."}`, type: "error" });
       }
     } catch (error) {
       console.error("Network Error:", error);
-      alert("Could not connect to the server. Please ensure the backend tunnel is active.");
+      setCustomAlert({ isOpen: true, message: "Could not connect to the server. Please check your network connection and try again.", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -330,6 +334,14 @@ export default function CategoryPage() {
           </div>
         )}
       </main>
+
+      {/* CUSTOM ALERT MODAL */}
+      <AlertModal 
+        isOpen={customAlert.isOpen} 
+        message={customAlert.message} 
+        type={customAlert.type} 
+        onClose={() => setCustomAlert(prev => ({ ...prev, isOpen: false }))} 
+      />
     </div>
   );
 }

@@ -43,24 +43,23 @@ const clinicalSpacesList = [
 ];
 
 const positioningList = ["Relaxation Chair", "Floor Sitter", "Stand-in Frame", "Stand-in Table", "Transfer Equipment", "Wedges (triangular, high and low, split)", "Pillows", "Foam Rolls (cylindrical, half-cylindrical)", "Convalescent Recliners"];
-const evaluationList = ["Steadiness Tester (Hole Type)", "Pencil Maze Test Board", "Tremor Quantifier", "Hand Dynamometer", "Strength Evaluation System", "Goniometer", "Finger Dexterity Test Board", "Key Hole Test Board", "Counting and Colour Sorting Beads Set", "Tape Measure", "Sensory Pins, Tuning Fork, Reflex Hammer (Sets)", "Sphygmomanometer", "Peak Flow Meters", "Stop Watch/Alarm Clock/Metronome", "Pain Rating Scale", "Weighing Scale", "Cognitive Assessment Tools (e.g. MoCA, MMSE) (Sets)", "Sensory Processing Assessment Equipment (Sets)", "Skin Fold Calipers", "Pen Light"];
+const evaluationList = ["Steadiness Tester (Hole Type)", "Pencil Maze Test Board", "Tremor Quantifier", "Hand Dynamometer", "Strength Evaluation System", "Goniometer", "Finger Dexterity Test Board", "Key Hole Test Board", "Counting and Colour Sorting Beads Set", "Tape Measure", "Sensory Pins, Tuning Fork, Reflex Hammer", "Sphygmomanometer", "Peak Flow Meters", "Stop Watch/Alarm Clock/Metronome", "Pain Rating Scale", "Weighing Scale", "Cognitive Assessment Tools (e.g. MoCA, MMSE)", "Sensory Processing Assessment Equipment", "Skin Fold Calipers", "Pen Light"];
 const generalTreatmentList = ["Treatment Tables/Plinths", "Tilt Tables", "Standing Frames", "Mat Platforms", "Parallel Bars/Stairs", "Stools, Carts, Screens and Mirrors", "Work Hardening Equipment", "Trays and Accessories", "Ramps", "Wheel Chairs", "Wax Warmer (Paraffin Bath)", "Cryotherapy Machine", "TheraBand/Resistance Bands (various grades)", "Exercise Mats", "Walkers and Mobility Aids", "Giant Standing Mirrors"];
 const safetyEquipmentList = ["Alarm", "Fire Extinguishers", "Blankets", "Intercom", "Fire Assembly Points", "Sand Buckets", "Clearly Marked Direction to Muster Points", "First Aid Box"];
-const infectionControlList = ["Face Masks (Packs)", "Disposable Gloves (Packs)", "Hand Sanitizers", "Antiseptic Solutions (Eusol, Savlon, Hibitane) (Carton/Pack)", "Sterilizing Unit", "Autoclave", "Washing Machine", "Drying Machine"];
-const consumablesList = ["Towels", "Mackintosh", "Bedsheets (Sets)", "Thermoplastic Splinting Material (45×61 sheets) (Sets)", "Velcro, Cotton Tape, Rivets, D-rings (splinting) (Sets)", "Lint, Felt, Foam Padding (Packs)", "Crepe Bandage and Gauze (Packs)", "Topical Agents (analgesic, emollient creams) (Packs)"];
-const paediatricList = ["Paediatric Treatment Tables", "Vestibular Swing System", "Trampoline (Paediatric)", "Pacer Gait Trainer", "Standers and Corner Seats", "Paediatric Treadmill", "Therapy Ball Pool", "Pea Ball and Bolster", "Prone Liner", "Handy Vibrator", "Exercise Wall Mirror", "Therapy Mats (Paediatric)", "Precision/Dexterity Training Cones", "Adapted Eating and Drinking Aids (Sets)", "Everyday Objects for ADL Practice", "Television Set (for visual feedback)", "Partial Body Weight Support System with Harness", "Resistance Bands (Paediatric)", "Building Blocks Set", "Puzzles (various levels)"];
+const infectionControlList = ["Face Masks", "Disposable Gloves", "Hand Sanitizers", "Antiseptic Solutions (Eusol, Savlon, Hibitane)", "Sterilizing Unit", "Autoclave", "Washing Machine", "Drying Machine"];
+const consumablesList = ["Towels", "Mackintosh", "Bedsheets", "Thermoplastic Splinting Material (45×61 sheets)", "Velcro, Cotton Tape, Rivets, D-rings (splinting)", "Lint, Felt, Foam Padding", "Crepe Bandage and Gauze", "Topical Agents (analgesic, emollient creams)"];
+const paediatricList = ["Paediatric Treatment Tables", "Vestibular Swing System", "Trampoline (Paediatric)", "Pacer Gait Trainer", "Standers and Corner Seats", "Paediatric Treadmill", "Therapy Ball Pool", "Pea Ball and Bolster", "Prone Liner", "Handy Vibrator", "Exercise Wall Mirror", "Therapy Mats (Paediatric)", "Precision/Dexterity Training Cones", "Adapted Eating and Drinking Aids", "Everyday Objects for ADL Practice", "Television Set (for visual feedback)", "Partial Body Weight Support System with Harness", "Resistance Bands (Paediatric)", "Building Blocks Set", "Puzzles (various levels)"];
 const neurologyList = ["Reacher", "Dressing Aids", "Home Accessories and Helpers", "Mobility Aids and Leisure Activity Items", "Scissors, Book Holder and Writing Aids", "Door Latch Frame Set", "Kitchen Frame Set/Simulated Kitchen Equipment", "Dressing Frame Set", "Eating Aids with Utensil Sets", "ADL Kit Sets", "ADL Board", "Transfer Boards", "Slide Sheets", "Upper Limb Work Station", "Arm Activity Kit (CIMT, Bimanual)", "Upper Limb Support", "Resistive Exercise Putty (dough)", "Rollators", "Balance Board/Cushion"];
-const orthopaedicList = ["Splinting Kit (static and dynamic) (Sets)", "Thermoplastic Splinting Materials (Sets)", "Gait Belts", "Hand Exerciser", "Orthoses Kit (upper and lower limb) (Sets)", "Upper Limb Work Station", "Stabilization/Mobilization Belts", "Hot and Cold Packs", "Foam Wedges (triangular, high and low, split)", "Wrist/Elbow/Shoulder Supports and Slings", "Sanding Unit (reciprocal, semi-circular, vertical, overhead)", "Flexion/Extension/Pronation/Supination Apparatus", "Multi-Purpose Wheel", "Range of Motion Arc", "Cervical/Thoracic/Pelvic Braces"];
-const mentalHealthList = ["Sewing Machine", "Metal Work Equipment", "Wood Work Equipment", "Art and Craft Supplies (paints, clay, canvas)", "Music Therapy Equipment (instruments, speaker) (Set)", "Leisure and Recreational Activity Items", "Cognitive Remediation Therapy Materials (Sets)", "Social Skills Activity Cards and Boards", "Video Recording Devices", "Relaxation Chair", "Target Game", "Balance Board/Cushion", "Resistance Bands (various grades)", "Utensils for Activities of Daily Living"];
-const geriatricList = ["Adapted Eating and Drinking Aids (Sets)", "Assistive Products for Dressing (Sets)", "Assistive Products for Grooming/Hygiene (Sets)", "Assistive Products for Toileting/Bathing (Sets)", "Reacher and Grab Aids", "Ergonomic Chair/Adjustable Furniture", "Standing Frames", "Balance Board/Cushion", "Gait Belts", "Wheel Chairs", "Cognitive Assessment Materials (Sets)", "Dementia Activity Kits (reminiscence boxes, puzzles) (Sets)", "Hot and Cold Packs", "Compression Products/Stockings", "Bed Positioning and Safety Products"];
-const communityList = ["Portable ADL Kit", "Portable Assessment Tools (goniometer, dynamometer)", "Assistive Devices (canes, crutches, frames, rollators)", "Wheelchair (manual)", "Ramps (portable)", "Splinting Kit (portable) (Sets)", "Resistance Bands (various grades)", "Home Modification Assessment Checklist", "Therapeutic Toys", "Vocational Activity Materials", "Community Re-integration Activity Kits"];
-const assistiveTechList = ["Thermoplastic Splinting Materials (45×61 sheets) (Sets)", "Orfit Cutter, Heat Gun, Heat Pan", "Cotton Tape, Velcro, Rivets, D-rings, Canvas (Set)", "Shoulder Supports and Slings", "Elbow Supports", "Wrist Supports, Cock-up Splints, Resting Splints", "Cervical Collars", "Clavicular/Thoracic/Pelvis Braces", "Ankle, Foot and Heel Supports", "Knee Supports", "Back Supports", "Scar Management and Gel Products", "Ergonomic Products (adjusters for chairs, tables, toilets)", "Compression Products and Stockings", "Edema Management Products", "Taping Materials", "Communication/AAC Devices (augmentative)"];
-const vocationalList = ["Work Simulation Equipment (filing, sorting, packing tools)", "Sewing Machine", "Metal Work Equipment", "Wood Work Equipment", "Computer with Assistive Software (screen readers, voice control)", "Ergonomic Workstation Setup Equipment (Sets)", "Functional Capacity Evaluation (FCE) Tools (Set)", "Sand and Water Table", "Strength Training Equipment (sand bags, weights)"];
+const orthopaedicList = ["Splinting Kit (static and dynamic)", "Thermoplastic Splinting Materials", "Gait Belts", "Hand Exerciser", "Orthoses Kit (upper and lower limb)", "Upper Limb Work Station", "Stabilization/Mobilization Belts", "Hot and Cold Packs", "Foam Wedges (triangular, high and low, split)", "Wrist/Elbow/Shoulder Supports and Slings", "Sanding Unit (reciprocal, semi-circular, vertical, overhead)", "Flexion/Extension/Pronation/Supination Apparatus", "Multi-Purpose Wheel", "Range of Motion Arc", "Cervical/Thoracic/Pelvic Braces"];
+const mentalHealthList = ["Sewing Machine", "Metal Work Equipment", "Wood Work Equipment", "Art and Craft Supplies (paints, clay, canvas)", "Music Therapy Equipment (instruments, speaker)", "Leisure and Recreational Activity Items", "Cognitive Remediation Therapy Materials", "Social Skills Activity Cards and Boards", "Video Recording Devices", "Relaxation Chair", "Target Game", "Balance Board/Cushion", "Resistance Bands (various grades)", "Utensils for Activities of Daily Living"];
+const geriatricList = ["Adapted Eating and Drinking Aids", "Assistive Products for Dressing", "Assistive Products for Grooming/Hygiene", "Assistive Products for Toileting/Bathing", "Reacher and Grab Aids", "Ergonomic Chair/Adjustable Furniture", "Standing Frames", "Balance Board/Cushion", "Gait Belts", "Wheel Chairs", "Cognitive Assessment Materials", "Dementia Activity Kits (reminiscence boxes, puzzles)", "Hot and Cold Packs", "Compression Products/Stockings", "Bed Positioning and Safety Products"];
+const communityList = ["Portable ADL Kit", "Portable Assessment Tools (goniometer, dynamometer)", "Assistive Devices (canes, crutches, frames, rollators)", "Wheelchair (manual)", "Ramps (portable)", "Splinting Kit (portable)", "Resistance Bands (various grades)", "Home Modification Assessment Checklist", "Therapeutic Toys", "Vocational Activity Materials", "Community Re-integration Activity Kits"];
+const assistiveTechList = ["Thermoplastic Splinting Materials (45×61 sheets)", "Orfit Cutter, Heat Gun, Heat Pan", "Cotton Tape, Velcro, Rivets, D-rings, Canvas", "Shoulder Supports and Slings", "Elbow Supports", "Wrist Supports, Cock-up Splints, Resting Splints", "Cervical Collars", "Clavicular/Thoracic/Pelvis Braces", "Ankle, Foot and Heel Supports", "Knee Supports", "Back Supports", "Scar Management and Gel Products", "Ergonomic Products (adjusters for chairs, tables, toilets)", "Compression Products and Stockings", "Edema Management Products", "Taping Materials", "Communication/AAC Devices (augmentative)"];
+const vocationalList = ["Work Simulation Equipment (filing, sorting, packing tools)", "Sewing Machine", "Metal Work Equipment", "Wood Work Equipment", "Computer with Assistive Software (screen readers, voice control)", "Ergonomic Workstation Setup Equipment", "Functional Capacity Evaluation (FCE) Tools", "Sand and Water Table", "Strength Training Equipment (sand bags, weights)"];
 const palliativeCareList = ["Adapted Eating and Drinking Aids", "Assistive Products for Dressing", "Assistive Products for Toileting", "Reacher and Grab Aids", "Hot and Cold Packs", "Foam Wedges and Rolls", "Balance Board/Cushion", "Resistance Bands (light grade)", "Leisure and Recreational Activity Items", "Relaxation and Mindfulness Aids", "Compression Products and Stockings", "Positioning Products (pillows, bolsters)"];
 const sensoryPerceptualList = ["Tactile and Visual Stimulators (feathers, peg boards)", "Target Game", "Basic Balance Beam", "Balances, Dartboard and Ball Pool", "Puzzles (various levels)", "Multi-Activity Work Station", "Mushroom Boards", "Pinch Tree Board", "Size Perception Square Board Set", "Television Set", "Foot Placement Ladder", "Equilibrium Board", "Building Blocks Set", "Visual Cues and Illustration Materials Set", "Play Dough", "Cone Board"];
-const adlKitchenList = ["Equipment for Bathing", "Equipment for Toileting", "Equipment for Grooming", "Bed (Simulated)", "Plates and Bowls", "Cups and Drinking Aids", "Self-Feeders and Arm Supports", "Overbed Tables", "Dycem Products (Non-slip surfaces)", "Dining Accessories", "Plate Rack", "Oven", "Oven Mitts (Pairs)", "Gas Cooker", "Mixer", "Span Board (Cutting Surfaces)", "Blender"];
+const adlKitchenList = ["Equipment for Bathing", "Equipment for Toileting", "Equipment for Grooming", "Bed (Simulated)", "Plates and Bowls", "Cups and Drinking Aids", "Self-Feeders and Arm Supports", "Overbed Tables", "Dycem Products (Non-slip surfaces)", "Dining Accessories", "Plate Rack", "Oven", "Oven Mitts", "Gas Cooker", "Mixer", "Span Board (Cutting Surfaces)", "Blender"];
 
-// Map the keys to the StepThree dynamic renderer (17 Categories)
 const CLINICAL_CATEGORIES = [
   { key: 'positioning', title: 'i. Positioning Equipment' },
   { key: 'evaluation', title: 'ii. Assessment/Evaluation Equipment' },
@@ -90,7 +89,6 @@ export default function OccupationalClinicalAssessment() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
 
-  // GLOBAL FORM STATE
   const [formData, setFormData] = useState({
     stepOne: {
       therapists: [{ id: 'phy_1', name: '', gender: '', dateAppt: '', designation: '', license: '', specialization: '', qualifications: [{ id: 'q_1', title: '', date: '' }], cpds: [{ id: 'c_1', title: '' }] }],
@@ -121,17 +119,17 @@ export default function OccupationalClinicalAssessment() {
   const handleNext = () => { if (currentStep < totalSteps) { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
   const handlePrev = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
 
-  // --- UPDATE EQUIPMENT HANDLER FOR STEP 3 ---
   const updateEquipmentCategory = (categoryKey: string, index: number, field: string, value: any) => {
-    const updatedCategory = [...(formData.stepThree as any)[categoryKey]];
-    updatedCategory[index] = { ...updatedCategory[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
-    }));
+    setFormData(prev => {
+      const updatedCategory = [...(prev.stepThree as any)[categoryKey]];
+      updatedCategory[index] = { ...updatedCategory[index], [field]: value };
+      return {
+        ...prev,
+        stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
+      };
+    });
   };
 
-  // --- VALIDATION ENGINE ---
   const checkIncompleteFields = () => {
     const allEq = Object.values(formData.stepThree).flat();
     const allItems = [...formData.stepTwo.spaces, ...allEq];
@@ -147,14 +145,20 @@ export default function OccupationalClinicalAssessment() {
     setShowIncompleteWarning(false);
     setIsSubmitting(true);
     
-    // SMART FORMATTER: Replaces blank/skipped inputs with "-"
     const formatList = (list: any[]) => list.map(item => ({
       ...item,
       isAvailable: item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable),
       availableQuantity: item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity)
     }));
 
-    const allEquipmentRaw = Object.values(formData.stepThree).flat();
+    // Frontend Structural Injection right before API payload dispatch
+    const allEquipmentRaw = Object.entries(formData.stepThree).flatMap(([key, items]) => {
+      const cat = CLINICAL_CATEGORIES.find(c => c.key === key);
+      return [
+        { isCategoryHeader: true, item: cat ? cat.title : key.toUpperCase() },
+        ...(items as any[])
+      ];
+    });
 
     const payload = { 
         occupationalTherapists: formData.stepOne.therapists, 
@@ -216,7 +220,6 @@ export default function OccupationalClinicalAssessment() {
         {currentStep === 3 && <StepThree data={formData.stepThree} categories={CLINICAL_CATEGORIES} updateCategory={updateEquipmentCategory} onPrev={handlePrev} onSubmit={handleInitialSubmit} isSubmitting={isSubmitting} />}
       </main>
 
-      {/* SMARTER WARNING MODAL */}
       {showIncompleteWarning && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
@@ -239,7 +242,6 @@ export default function OccupationalClinicalAssessment() {
         </div>
       )}
 
-      {/* SUCCESS MODAL */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">

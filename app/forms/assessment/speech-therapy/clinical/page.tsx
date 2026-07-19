@@ -32,7 +32,7 @@ const buildItemList = (list: string[]) => {
 };
 
 // ==========================================
-// SPEECH THERAPY DATA LISTS
+// SPEECH THERAPY CLINICAL DATA LISTS
 // ==========================================
 const speechClinicalSpacesList = [
   "Offices", "Treatment Cubicles", "Changing Rooms", "Patients Waiting Area", "Hospital Wards/ Treatment Side Ward", 
@@ -40,7 +40,6 @@ const speechClinicalSpacesList = [
   "Staff Toilets", "Patients’ Toilet", "Departmental Store"
 ];
 
-// EQUIPMENT LISTS
 const diagnosticList = [
   "Digital Audio Recorder", "Video Recorder /HD Camera", "Laptop with Speech Analysis Software", "Desktop Computer", "High Quality Microphone", "Noise Induced Headset", "Portable Speaker", "Stopwatch/Timer", "Tablet for AAC and Testing Apps", "Printer /Scanner for Test Protocols", "Penlight", "Tongue Depressors (Pack)", "Oral Examination Mirror", "Gloves (Pack)", "Reflex Hammer", "IOPI Tongue Pressure Device", "Respiratory Pressure Meter", "Decibel Meter/SPL Meter", "DDK Digital Counter", "Acoustic Voice Analysis Software", "Computerised Speech Lab(CSL)", "Microphone Calibration System", "Sound Level Meter", "Electroglottograph(EGG)", "Videostroboscopy", "Laryngeal Endoscopy Tower", "Nasometer", "Nasopharyngoscope", "Aerodynamic Airflow-Pressure System", "Videofloroscopy Support Access", "Tongue Pressure Device", "Food Viscosity Testing Kit", "VFSS/Modified Barium Swallow System", "FEES Recording Software", "Endoscope", "Light Source", "Monitor", "Image Capture System", "Speech Generating Device", "Touch Screen Board", "Symbol Communication Software", "Paediatric Feeding Chair", "Texture Testing Spoons", "Syringes", "Nipple Flow Testing Set", "Bottle Teat Assessment Kit", "Weighing Scale", "Sensory Feeding Tools", "Play Based Assessment Kits", "Cognitive Communication Software", "Language Sample Software", "Standardized Test Kit Cabinet", "Seminar Projector", "Video Teaching Archive System", "Students Practical Kit"
 ];
@@ -97,7 +96,6 @@ const genderAffirmingVoiceList = [
   "Acoustics Analysis Software", "Pitch Tracker Apps", "Resonance Feedback Software", "High Quality Microphones", "Video Modelling Resources", "Counselling Room Setup"
 ];
 
-// Map the keys to the StepThree dynamic renderer (Speech Therapy Categories)
 const CLINICAL_CATEGORIES = [
   { key: 'diagnostic', title: 'i. Diagnostic Equipment' },
   { key: 'safetyEquipment', title: 'ii. Safety Equipment' },
@@ -152,17 +150,17 @@ export default function SpeechClinicalAssessment() {
   const handleNext = () => { if (currentStep < totalSteps) { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
   const handlePrev = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
 
-  // --- UPDATE EQUIPMENT HANDLER FOR STEP 3 ---
   const updateEquipmentCategory = (categoryKey: string, index: number, field: string, value: any) => {
-    const updatedCategory = [...(formData.stepThree as any)[categoryKey]];
-    updatedCategory[index] = { ...updatedCategory[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
-    }));
+    setFormData(prev => {
+      const updatedCategory = [...(prev.stepThree as any)[categoryKey]];
+      updatedCategory[index] = { ...updatedCategory[index], [field]: value };
+      return {
+        ...prev,
+        stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
+      };
+    });
   };
 
-  // --- VALIDATION ENGINE ---
   const checkIncompleteFields = () => {
     const allEq = Object.values(formData.stepThree).flat();
     const allItems = [...formData.stepTwo.spaces, ...allEq];
@@ -178,14 +176,20 @@ export default function SpeechClinicalAssessment() {
     setShowIncompleteWarning(false);
     setIsSubmitting(true);
     
-    // SMART FORMATTER: Replaces blank/skipped inputs with "-"
     const formatList = (list: any[]) => list.map(item => ({
       ...item,
       isAvailable: item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable),
       availableQuantity: item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity)
     }));
 
-    const allEquipmentRaw = Object.values(formData.stepThree).flat();
+    // Frontend Structural Injection right before API payload dispatch
+    const allEquipmentRaw = Object.entries(formData.stepThree).flatMap(([key, items]) => {
+      const cat = CLINICAL_CATEGORIES.find(c => c.key === key);
+      return [
+        { isCategoryHeader: true, item: cat ? cat.title : key.toUpperCase() },
+        ...(items as any[])
+      ];
+    });
 
     const payload = { 
         speechTherapists: formData.stepOne.therapists, 
@@ -247,7 +251,6 @@ export default function SpeechClinicalAssessment() {
         {currentStep === 3 && <StepThree data={formData.stepThree} categories={CLINICAL_CATEGORIES} updateCategory={updateEquipmentCategory} onPrev={handlePrev} onSubmit={handleInitialSubmit} isSubmitting={isSubmitting} />}
       </main>
 
-      {/* SMARTER WARNING MODAL */}
       {showIncompleteWarning && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
@@ -270,7 +273,6 @@ export default function SpeechClinicalAssessment() {
         </div>
       )}
 
-      {/* SUCCESS MODAL */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">

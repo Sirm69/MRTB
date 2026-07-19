@@ -214,12 +214,14 @@ export default function PhysioClinicalAssessment() {
   const handlePrev = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
 
   const updateEquipmentCategory = (categoryKey: string, index: number, field: string, value: any) => {
-    const updatedCategory = [...(formData.stepThree as any)[categoryKey]];
-    updatedCategory[index] = { ...updatedCategory[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
-    }));
+    setFormData(prev => {
+      const updatedCategory = [...(prev.stepThree as any)[categoryKey]];
+      updatedCategory[index] = { ...updatedCategory[index], [field]: value };
+      return {
+        ...prev,
+        stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
+      };
+    });
   };
 
   // --- VALIDATION ENGINE ---
@@ -241,11 +243,18 @@ export default function PhysioClinicalAssessment() {
     // SMART FORMATTER: Replaces blank/skipped inputs with "-"
     const formatList = (list: any[]) => list.map(item => ({
       ...item,
-      isAvailable: item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable),
-      availableQuantity: item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity)
+      isAvailable: item.isCategoryHeader ? 'Category' : (item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable)),
+      availableQuantity: item.isCategoryHeader ? 'Category' : (item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity))
     }));
 
-    const allEquipmentRaw = Object.values(formData.stepThree).flat();
+    // Inject Category Headers before sending to backend!
+    const allEquipmentRaw = Object.entries(formData.stepThree).flatMap(([key, items]) => {
+      const cat = CLINICAL_CATEGORIES.find(c => c.key === key);
+      return [
+        { isCategoryHeader: true, item: cat ? cat.title : key.toUpperCase() },
+        ...(items as any[])
+      ];
+    });
 
     const payload = { 
         physiotherapists: formData.stepOne.physios, 

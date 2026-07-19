@@ -88,8 +88,6 @@ const diagnosticList = ["Goniometers", "Sphygmomanometer / Stethoscope", "Spirom
 const infectionControlList = ["Face Masks (Packs)", "Disposable Gloves (Packs)", "Hand Sanitizer Dispensers", "Sputum Containers (Packs)", "Sterilizing Unit", "Autoclave", "Antiseptic Solution (Packs)", "Washing Machine", "Drying Machine", "Sharps Disposal Bins", "Biohazard Waste Bins"];
 const safetyMeasuresList = ["Alarm", "Fire Extinguisher", "Fire Blanket", "Intercom", "Fire Assembly Point Signage", "Sand Bucket", "Clearly Marked Direction to Muster Point", "First Aid Kits", "Emergency Exit Lights"];
 
-
-// Map the keys to the StepFour dynamic renderer (Occupational Therapy Academic Categories)
 const ACADEMIC_CATEGORIES = [
   { key: 'anatomy', title: '5.1 Anatomy and Embryology' },
   { key: 'histology', title: '5.2 Histology' },
@@ -119,7 +117,6 @@ export default function OccupationalAcademicAssessment() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
-  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
@@ -161,17 +158,17 @@ export default function OccupationalAcademicAssessment() {
   const handleNext = () => { if (currentStep < totalSteps) { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
   const handlePrev = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
 
-  // --- UPDATE EQUIPMENT HANDLER FOR STEP 4 ---
   const updateEquipmentCategory = (categoryKey: string, index: number, field: string, value: any) => {
-    const updatedCategory = [...(formData.stepFour as any)[categoryKey]];
-    updatedCategory[index] = { ...updatedCategory[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      stepFour: { ...prev.stepFour, [categoryKey]: updatedCategory }
-    }));
+    setFormData(prev => {
+      const updatedCategory = [...(prev.stepFour as any)[categoryKey]];
+      updatedCategory[index] = { ...updatedCategory[index], [field]: value };
+      return {
+        ...prev,
+        stepFour: { ...prev.stepFour, [categoryKey]: updatedCategory }
+      };
+    });
   };
 
-  // --- VALIDATION ENGINE ---
   const checkIncompleteFields = () => {
     const allEq = Object.values(formData.stepFour).flat();
     const allItems = [...formData.stepTwo.spaces, ...formData.stepThree.clinicalTraining, ...allEq];
@@ -186,15 +183,21 @@ export default function OccupationalAcademicAssessment() {
   const executeSubmit = async () => {
     setShowIncompleteWarning(false);
     setIsSubmitting(true);
-    
-    // SMART FORMATTER: Replaces blank/skipped inputs with "-"
+
     const formatList = (list: any[]) => list.map(item => ({
       ...item,
       isAvailable: item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable),
       availableQuantity: item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity)
     }));
 
-    const allEquipmentRaw = Object.values(formData.stepFour).flat();
+    // Inject category headings context arrays right before API transmission
+    const allEquipmentRaw = Object.entries(formData.stepFour).flatMap(([key, items]) => {
+      const cat = ACADEMIC_CATEGORIES.find(c => c.key === key);
+      return [
+        { isCategoryHeader: true, item: cat ? cat.title : key.toUpperCase() },
+        ...(items as any[])
+      ];
+    });
 
     const payload = { 
         lecturers: formData.stepOne.lecturers, 
@@ -258,7 +261,6 @@ export default function OccupationalAcademicAssessment() {
         {currentStep === 4 && <StepFour data={formData.stepFour} categories={ACADEMIC_CATEGORIES} updateCategory={updateEquipmentCategory} onPrev={handlePrev} onSubmit={handleInitialSubmit} isSubmitting={isSubmitting} />}
       </main>
 
-      {/* SMARTER WARNING MODAL */}
       {showIncompleteWarning && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
@@ -281,7 +283,6 @@ export default function OccupationalAcademicAssessment() {
         </div>
       )}
 
-      {/* SUCCESS MODAL */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">

@@ -65,7 +65,6 @@ const academicClinicalList = [
   "- Clearly stated", "- Ambiguous"
 ];
 
-// EQUIPMENT LISTS
 const anatomyList = [
   "Embalmed bodies", "Anatomage", "Equipment Trolleys", "Electric Embalming Machine", "Bone Cutting Equipment - Electric Saw/Drill", "Articulated and Unarticulated Skeletons", "X-ray Viewing Boxes", "Air-Conditions for the Dissecting Rooms and Air Extractors.", "Models", "Slide for Sections", "Slide Projectors", 
   "Toilet Facilities:", "- Male", "- Female", 
@@ -81,15 +80,11 @@ const paediatricAudiologyList = ["Oae", "AABR /New-born Hearing Screening", "Dia
 const geriatricAudiologyList = ["Clinical/Diagnostic Audiometer", "Portable Screening Audiometer", "Sound-Treated Room", "Insert Earphones (Sets)", "Supra-Aural Headphones", "Bone Vibrator", "Speech Microphone", "Patient Response Button", "Otoscope/ Videoscope", "Tympanometer/Immitance Meter", "Acoustic Reflex Analyzer", "OAE Machine", "ABR/ASSR System", "Tunning Fork (Sets)", "Lptop And Audilogy Software", "Printer / Recording System", "Calibration Tools (Set)", "Cerumen Management Kit (Set)"];
 const rehabAudiologyList = ["Hearing Aids (BTE,RIC,ITE,CIC) (Set)", "Hearing Aid Programing Software", "Hearing Aid Programmer", "Real Ear Measurement(REM)System", "Hearing Aid Analyser/Test Box", "Earmold Impression Syringe (Set)", "Ear Tips And Domes (Set)", "Hearing Aid Batteries/Charges (Set)", "FM Systems /Remote Microphone Systems", "Loop System", "Auditory Training Software", "Speech Perception Test Materials (Set)", "Counselling Materials (Set)", "Communication Strategy Hand-outs", "Assistive Listening Device"];
 const vestibularList = ["ENG/VNG System", "Infrared Video Goggles", "Frenzel Goggles", "Caloric Irrigator", "Rotary Chair", "VEMP Machine", "Computer and Balance Software", "Posturography System", "Foam Balance Pad", "Gait Assessment Walkway", "Dix-Hall pike Couch/Examination", "Safety Harness", "Vestibular Rehab Exercise Tools (Set)"];
-
-// CORRECTED: Kept Battery and Charger on the same main S/N using the header/bullet system!
 const cochlearImplantList = ["Cochlear Implant Programing Software", "Mapping", "Speech Processor", "Transmitting Coil", "Telemetry/ECAP System", "Speech Perception Test Materials (Set)", "CI Troubleshooting Kit (Set)", "Battery and Charger System:", "- Battery System", "- Charger System", "Bone-Anchored Hearing Device Programming Kit", "Laptop Workstation", "Intaoperative Monitoring Interface(Advance Centres)", "Rehabilitation Listening Materials (Set)"];
-
 const occupationalList = ["Portable Audiometer", "Mobile Audiometric Booth", "Noise Dosimeter", "Sound Level Meter", "Octave Band Analyzer", "Hearing Protection Fit-Testing System", "Earplugs And Ear Earmuffs", "Hearing Conservation Software", "Record Management Software", "Worker Counselling Materials (Set)", "Potable Otoscope", "Industrial Noise Survey Kit (Set)"];
 const tinnitusPublicHealthList = ["Clinical Audiometer", "High-Frequency Audiometer", "Tinnitus Matching Modules", "Loudness Discomfort Level (LDL) Tools", "Tinnitus Questionnaires (THI,TFI)", "Sound Therapy Generators", "Tinnitus Maskers", "Combination Hearing Aids (Set)", "White Noise Generators", "Counselling Software/CBT Materials", "Relaxation Audio Library", "Public Health Screening Audiometer", "OAE Screener", "Noise Awareness Education Kits (Set)", "Community Outreach IEC Materials (Set)", "Ear Protection Demonstration Kits (Set)"];
 const safetyMeasuresList = ["Alarm", "Fire Extinguisher", "Blanket", "Intercom", "Fire Assembly Point", "Sand Bucket", "Clearly marked direction to Muster Point"];
 
-// Map the keys to the StepFour dynamic renderer (Audiology Academic Categories)
 const ACADEMIC_CATEGORIES = [
   { key: 'anatomy', title: 'i. Anatomy and Embryology' },
   { key: 'histology', title: 'ii. Histology' },
@@ -117,7 +112,6 @@ export default function AudiologyAcademicAssessment() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
 
-  // GLOBAL FORM STATE
   const [formData, setFormData] = useState({
     stepOne: {
       lecturers: [{ id: 'lec_1', name: '', gender: '', dateAppt: '', natureAppt: '', designation: '', license: '', specialization: '', qualifications: [{ id: 'q_1', title: '', date: '' }], cpds: [{ id: 'c_1', title: '' }], papers: [{ id: 'p_1', title: '' }] }],
@@ -147,17 +141,17 @@ export default function AudiologyAcademicAssessment() {
   const handleNext = () => { if (currentStep < totalSteps) { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
   const handlePrev = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
 
-  // --- UPDATE EQUIPMENT HANDLER FOR STEP 4 ---
   const updateEquipmentCategory = (categoryKey: string, index: number, field: string, value: any) => {
-    const updatedCategory = [...(formData.stepFour as any)[categoryKey]];
-    updatedCategory[index] = { ...updatedCategory[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      stepFour: { ...prev.stepFour, [categoryKey]: updatedCategory }
-    }));
+    setFormData(prev => {
+      const updatedCategory = [...(prev.stepFour as any)[categoryKey]];
+      updatedCategory[index] = { ...updatedCategory[index], [field]: value };
+      return {
+        ...prev,
+        stepFour: { ...prev.stepFour, [categoryKey]: updatedCategory }
+      };
+    });
   };
 
-  // --- VALIDATION ENGINE ---
   const checkIncompleteFields = () => {
     const allEq = Object.values(formData.stepFour).flat();
     const allItems = [...formData.stepTwo.spaces, ...formData.stepThree.clinicalTraining, ...allEq];
@@ -173,14 +167,20 @@ export default function AudiologyAcademicAssessment() {
     setShowIncompleteWarning(false);
     setIsSubmitting(true);
     
-    // SMART FORMATTER: Replaces blank/skipped inputs with "-"
     const formatList = (list: any[]) => list.map(item => ({
       ...item,
-      isAvailable: item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable),
-      availableQuantity: item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity)
+      isAvailable: item.isCategoryHeader ? 'Category' : (item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable)),
+      availableQuantity: item.isCategoryHeader ? 'Category' : (item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity))
     }));
 
-    const allEquipmentRaw = Object.values(formData.stepFour).flat();
+    // Inject structural categories right before API dispatch
+    const allEquipmentRaw = Object.entries(formData.stepFour).flatMap(([key, items]) => {
+      const cat = ACADEMIC_CATEGORIES.find(c => c.key === key);
+      return [
+        { isCategoryHeader: true, item: cat ? cat.title : key.toUpperCase() },
+        ...(items as any[])
+      ];
+    });
 
     const payload = { 
         lecturers: formData.stepOne.lecturers, 
@@ -244,7 +244,6 @@ export default function AudiologyAcademicAssessment() {
         {currentStep === 4 && <StepFour data={formData.stepFour} categories={ACADEMIC_CATEGORIES} updateCategory={updateEquipmentCategory} onPrev={handlePrev} onSubmit={handleInitialSubmit} isSubmitting={isSubmitting} />}
       </main>
 
-      {/* SMARTER WARNING MODAL */}
       {showIncompleteWarning && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
@@ -267,7 +266,6 @@ export default function AudiologyAcademicAssessment() {
         </div>
       )}
 
-      {/* SUCCESS MODAL */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">

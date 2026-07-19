@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Lock, ChevronDown, X, Search, Loader2 } from 'lucide-react';
 // @ts-expect-error - naija-state-local-government does not have built-in TypeScript types
 import NaijaStates from 'naija-state-local-government';
+import AlertModal from '../../components/AlertModal';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,6 +29,9 @@ export default function RegisterPage() {
 
   // Modal states
   const [activeModal, setActiveModal] = useState<'state' | 'lga' | null>(null);
+  
+  // Custom Alert Modal State
+  const [customAlert, setCustomAlert] = useState<{ isOpen: boolean; message: string; type?: 'success' | 'error' | 'warning' }>({ isOpen: false, message: "" });
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -61,12 +65,12 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      setCustomAlert({ isOpen: true, message: "Passwords do not match!", type: "error" });
       return;
     }
 
     if (!selectedState || !selectedLGA) {
-      alert("Please select both a State and an LGA.");
+      setCustomAlert({ isOpen: true, message: "Please select both a State and an LGA.", type: "error" });
       return;
     }
 
@@ -88,7 +92,7 @@ export default function RegisterPage() {
 
       // If backend throws a 400, the email/phone exists
       if (!response.ok) {
-        alert(result.detail || "Account already exists.");
+        setCustomAlert({ isOpen: true, message: result.detail || "Account already exists.", type: "error" });
         setIsChecking(false);
         return;
       }
@@ -110,7 +114,7 @@ export default function RegisterPage() {
 
     } catch (error) {
       console.error("API Error:", error);
-      alert("Could not connect to the server to verify your details.");
+      setCustomAlert({ isOpen: true, message: "Could not connect to the server to verify your details.", type: "error" });
     } finally {
       setIsChecking(false);
     }
@@ -257,6 +261,14 @@ export default function RegisterPage() {
           </div>
         </div>
       )}
+
+      {/* CUSTOM ALERT MODAL */}
+      <AlertModal 
+        isOpen={customAlert.isOpen} 
+        message={customAlert.message} 
+        type={customAlert.type} 
+        onClose={() => setCustomAlert(prev => ({ ...prev, isOpen: false }))} 
+      />
     </div>
   );
 }
