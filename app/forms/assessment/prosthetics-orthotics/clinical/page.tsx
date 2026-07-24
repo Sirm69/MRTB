@@ -57,7 +57,6 @@ const generalToolsList = ["Bending brace (Sets)", "Charger 100-240V AC 50-60Hz",
 // Clinical & Examination items extracted from "OTHERS"
 const clinicalConsumablesList = ["Examination beds", "Towels", "Plinths", "Pillows", "Blankets", "Mats", "Mackintosh", "Ergonomically-designed chairs", "Stools", "White Clinical Coats", "Long overalls", "Sterilized Dressings (Packs)", "Face Masks (Packs)", "Disposable Gloves (Packs)", "Fire extinguisher", "Measuring devices & sensation"];
 
-
 // Map the keys to the StepThree dynamic renderer (Clinical flows skip Step 4)
 const CLINICAL_CATEGORIES = [
   { key: 'assessmentAlignment', title: 'Section A – Clinical Assessment & Alignment Tools' },
@@ -105,12 +104,14 @@ export default function ProstheticsClinicalAssessment() {
 
   // --- UPDATE EQUIPMENT HANDLER FOR STEP 3 ---
   const updateEquipmentCategory = (categoryKey: string, index: number, field: string, value: any) => {
-    const updatedCategory = [...(formData.stepThree as any)[categoryKey]];
-    updatedCategory[index] = { ...updatedCategory[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
-    }));
+    setFormData(prev => {
+      const updatedCategory = [...(prev.stepThree as any)[categoryKey]];
+      updatedCategory[index] = { ...updatedCategory[index], [field]: value };
+      return {
+        ...prev,
+        stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
+      };
+    });
   };
 
   // --- VALIDATION ENGINE ---
@@ -136,7 +137,14 @@ export default function ProstheticsClinicalAssessment() {
       availableQuantity: item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity)
     }));
 
-    const allEquipmentRaw = Object.values(formData.stepThree).flat();
+    // Inject formatting category metadata markers directly prior to dispatch
+    const allEquipmentRaw = Object.entries(formData.stepThree).flatMap(([key, items]) => {
+      const cat = CLINICAL_CATEGORIES.find(c => c.key === key);
+      return [
+        { isCategoryHeader: true, item: cat ? cat.title : key.toUpperCase() },
+        ...(items as any[])
+      ];
+    });
 
     const payload = { 
         practitioners: formData.stepOne.prosthetists, 
@@ -198,7 +206,6 @@ export default function ProstheticsClinicalAssessment() {
         {currentStep === 3 && <StepThree data={formData.stepThree} categories={CLINICAL_CATEGORIES} updateCategory={updateEquipmentCategory} onPrev={handlePrev} onSubmit={handleInitialSubmit} isSubmitting={isSubmitting} />}
       </main>
 
-      {/* SMARTER WARNING MODAL */}
       {showIncompleteWarning && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
@@ -221,7 +228,6 @@ export default function ProstheticsClinicalAssessment() {
         </div>
       )}
 
-      {/* SUCCESS MODAL */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">

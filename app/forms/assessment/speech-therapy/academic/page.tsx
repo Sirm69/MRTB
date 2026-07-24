@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Loader2, AlertTriangle } from "lucide-react";
 
 import StepOne from "./StepOne";
-import StepTwo from "./StepTwo"; 
+import StepTwo from "./StepTwo";
 import StepThree from "./StepThree"; 
 import StepFour from "./StepFour";
 
@@ -43,7 +43,6 @@ const academicClinicalList = [
   "Hospital Bed Space", "Compliment of Specialist Services:", "- Speech Sound Disorder", "- Language Disorders", "- Fluency Disorders", "- Voice and Resonance", "- Swallowing and Feeding", "- Cognitive-Communication Disorders", "- Social Communication (Pragmatics)", "- Augmentative and Alternative Communication", "- Oro facial Myology", "- Literacy", "- Gender Affirming Voice Training", "Speech Therapy Department:", "- Purpose built", "- Number of Speech Therapy", "Areas Of Specialization In Speech Therapy:", "- Speech Sound Disorder", "- Language Disorders", "- Fluency Disorders", "- Voice and Resonance", "- Swallowing and Feeding", "- Cognitive-Communication Disorders", "- Social Communication (Pragmatics)", "- Augmentative And Alternative Communication", "- Oro-facial Myology", "- Literacy", "- Gender Affirming Voice Training", "Academic Speech Therapy Department:", "- Purpose built", "- Within Hospital Premises", "Clinical Students Hostel:", "- Within Hospital Premises", "Funding Source:", "- clearly stated", "- ambiguous"
 ];
 
-// EQUIPMENT LISTS
 const anatomyList = ["Embalmed Bodies", "Anatomage", "Equipment Trolleys", "Electric Embalming Machine", "Bone Cutting Equipment - Electric Saw/Drill", "Articulated and Unarticulated Skeletons", "X-Ray Viewing Boxes", "Air-Conditions for the Dissecting Rooms and Air Extractors", "Models", "Slide for Sections", "Slide Projectors", "Toilet Facilities:", "- Male", "- Female", "Changing Room", "Shower Room etc."];
 const histologyList = ["Microtome", "Rotary/Sledge Microtome Knives", "Light Microscopes Microtome", "Vacuum Pump Dissecting Microtome", "Cryostat with Microtome", "Teaching Microscope", "Electron Microscope", "Slides"];
 const biochemistryList = ["Centrifuge", "Ultracentrifuge", "Electronic Balances", "Heating Block", "Vacuum Pumps", "Spectrophotometer", "PH. Metres", "Thermostatic Water Bath", "Bunner", "Test tube varying size", "Distiller"];
@@ -63,7 +62,6 @@ const literacyList = ["Reading Passages", "Phonics Cards", "Letter Tiles (Boxes)
 const genderAffirmingVoiceList = ["Acoustics Analysis Software", "Pitch Tracker Apps", "Resonance Feedback Software", "High Quality Microphones", "Video Modelling Resources", "Counselling Room Setup"];
 const safetyMeasuresList = ["Alarm", "Fire Extinguisher", "Blanket", "Intercom", "Fire Assembly Point", "Sand Bucket", "Clearly marked direction to muster point"];
 
-// Map the keys to the StepFour dynamic renderer (Academic Categories)
 const ACADEMIC_CATEGORIES = [
   { key: 'anatomy', title: 'i. Anatomy and Embryology' },
   { key: 'histology', title: 'ii. Histology' },
@@ -88,13 +86,12 @@ const ACADEMIC_CATEGORIES = [
 export default function SpeechAcademicAssessment() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4; // Academic flow is 4 Steps!
+  const totalSteps = 4;
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
 
-  // GLOBAL FORM STATE
   const [formData, setFormData] = useState({
     stepOne: {
       lecturers: [{ id: 'lec_1', name: '', gender: '', dateAppt: '', natureAppt: '', designation: '', license: '', specialization: '', qualifications: [{ id: 'q_1', title: '', date: '' }], cpds: [{ id: 'c_1', title: '' }], papers: [{ id: 'p_1', title: '' }] }],
@@ -127,17 +124,17 @@ export default function SpeechAcademicAssessment() {
   const handleNext = () => { if (currentStep < totalSteps) { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
   const handlePrev = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
 
-  // --- UPDATE EQUIPMENT HANDLER FOR STEP 4 ---
   const updateEquipmentCategory = (categoryKey: string, index: number, field: string, value: any) => {
-    const updatedCategory = [...(formData.stepFour as any)[categoryKey]];
-    updatedCategory[index] = { ...updatedCategory[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      stepFour: { ...prev.stepFour, [categoryKey]: updatedCategory }
-    }));
+    setFormData(prev => {
+      const updatedCategory = [...(prev.stepFour as any)[categoryKey]];
+      updatedCategory[index] = { ...updatedCategory[index], [field]: value };
+      return {
+        ...prev,
+        stepFour: { ...prev.stepFour, [categoryKey]: updatedCategory }
+      };
+    });
   };
 
-  // --- VALIDATION ENGINE ---
   const checkIncompleteFields = () => {
     const allEq = Object.values(formData.stepFour).flat();
     const allItems = [...formData.stepTwo.spaces, ...formData.stepThree.clinicalTraining, ...allEq];
@@ -153,14 +150,20 @@ export default function SpeechAcademicAssessment() {
     setShowIncompleteWarning(false);
     setIsSubmitting(true);
     
-    // SMART FORMATTER: Replaces blank/skipped inputs with "-"
     const formatList = (list: any[]) => list.map(item => ({
       ...item,
       isAvailable: item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable),
       availableQuantity: item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity)
     }));
 
-    const allEquipmentRaw = Object.values(formData.stepFour).flat();
+    // Inject unique category heading segments right before payload dispatch
+    const allEquipmentRaw = Object.entries(formData.stepFour).flatMap(([key, items]) => {
+      const cat = ACADEMIC_CATEGORIES.find(c => c.key === key);
+      return [
+        { isCategoryHeader: true, item: cat ? cat.title : key.toUpperCase() },
+        ...(items as any[])
+      ];
+    });
 
     const payload = { 
         lecturers: formData.stepOne.lecturers, 
@@ -224,7 +227,6 @@ export default function SpeechAcademicAssessment() {
         {currentStep === 4 && <StepFour data={formData.stepFour} categories={ACADEMIC_CATEGORIES} updateCategory={updateEquipmentCategory} onPrev={handlePrev} onSubmit={handleInitialSubmit} isSubmitting={isSubmitting} />}
       </main>
 
-      {/* SMARTER WARNING MODAL */}
       {showIncompleteWarning && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
@@ -247,7 +249,6 @@ export default function SpeechAcademicAssessment() {
         </div>
       )}
 
-      {/* SUCCESS MODAL */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">

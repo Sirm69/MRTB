@@ -57,7 +57,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("Login Error:", error);
-      setMessage("Could not connect to the server. Is the dev tunnel active?");
+      setMessage("Could not connect to the server. Please check your network connection and try again.");
       setMessageType("error");
     } finally {
       setLoading(false);
@@ -197,12 +197,12 @@ export default function LoginPage() {
 
         {/* MESSAGE SECTION */}
         {message && (
-          <div className={`mt-6 flex items-center justify-center gap-2 px-5 py-3 rounded-md text-center text-sm font-medium max-w-md transition-all duration-300 ${
+          <div className={`mt-5 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-center text-[11px] font-bold max-w-xs transition-all duration-300 ${
             messageType === "success"
-              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-              : "bg-red-100 text-red-800 border border-red-200"
+              ? "bg-[#EEF6DF] text-[#65A30D] border border-[#65A30D]/30"
+              : "bg-red-50 text-red-600 border border-red-200"
           }`}>
-            {messageType === "error" && <XCircle size={16} className="text-red-600" />}
+            {messageType === "error" && <XCircle size={14} className="text-red-500 shrink-0" />}
             {message}
           </div>
         )}

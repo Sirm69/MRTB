@@ -44,38 +44,32 @@ const academicSpacesList = [
   "Changing Rooms", "Store"
 ];
 
-// Extracted from "OTHERS" requirements
 const academicClinicalList = [
   "Purpose-built departmental building", "Hostel accommodation adequately furnished", 
   "Departmental Bus", "White Clinical Coats for Prosthetists/Orthotists and Assistant", 
-  "Long overalls for Technicians/Craftsmen"
+  "Long overalls for Technicians/Craftsmen", "Student’s Lecture Notes", "Student’s Time table", 
+  "Pre-admission Requirements", "Lecture Schedules", "Practical Exposure", 
+  "External Examiner’s Reports", "Student’s Mode of dressing"
 ];
 
-// EQUIPMENT LISTS (Sections A-G + Others)
-const assessmentAlignmentList = ["Goniometer", "Protractor", "Measuring tape", "Shoe measuring tape", "Ruler", "Spreading caliper (small & large)", "Vernier caliper (small & large)", "Precision spring compass", "Alignment fixture for prostheses", "Alignment fixture for orthotic joints", "Knee centre jig", "Mounting frame with a laser", "Gait mirror", "Parallel bars (Set)", "Pressure mat"];
-const castingShapeList = ["Surfoam files (flat, half-round, round) (Sets)", "Plaster knives", "Plaster shears", "Plaster mixing bowls", "Spatulas", "Cast stool", "Sand bath", "Bench vise", "Floor vise", "Mandrel", "3D scanner"];
-const fabricationList = ["Allen key set (Set)", "T-Handled hex wrench", "Wrench", "Combination spanner set (Set)", "Torque wrench", "Torque screwdriver", "Screwdriver set (Set)", "Set of pliers (Set)", "Wire cutter", "Hammer set (Set)", "Hand cabinet file (round, half-round, flat)", "Metal hacksaw frame", "Hacksaw blade", "Sheet metal shears", "Rivet set (Set)", "Hole punch set (Set)", "Slot punch", "Deburring knife", "Sharpening stone"];
+const assessmentAlignmentList = ["Goniometer", "Protractor", "Measuring tape", "Shoe measuring tape", "Ruler", "Spreading caliper (small & large)", "Vernier caliper (small & large)", "Precision spring compass", "Alignment fixture for prostheses", "Alignment fixture for orthotic joints", "Knee centre jig", "Mounting frame with a laser", "Gait mirror", "Parallel bars", "Pressure mat"];
+const castingShapeList = ["Surfoam files (flat, half-round, round)", "Plaster knives", "Plaster shears", "Plaster mixing bowls", "Spatulas", "Cast stool", "Sand bath", "Bench vise", "Floor vise", "Mandrel", "3D scanner"];
+const fabricationList = ["Allen key set", "T-Handled hex wrench", "Wrench", "Combination spanner set", "Torque wrench", "Torque screwdriver", "Screwdriver set", "Set of pliers", "Wire cutter", "Hammer set", "Hand cabinet file (round, half-round, flat)", "Metal hacksaw frame", "Hacksaw blade", "Sheet metal shears", "Rivet set", "Hole punch set", "Slot punch", "Deburring knife", "Sharpening stone"];
 const machinesList = ["Floor-mounted drilling machine", "Tabletop drilling machine", "Hand drills (manual & electric)", "Shoe patching machine", "Shoe stretcher, locking", "Silicon rolling mill", "Dust extraction system", "Compressor", "Vacuum pump", "Hot air oven", "Plastic welding machine", "Jig machine", "3D printer / CNC"];
-const laminationList = ["Workbench for lamination", "Resin mixing station", "Sealing iron", "PVA measuring set (Set)", "Vacuum lines & manifolds", "PPE sets (Sets)"];
+const laminationList = ["Workbench for lamination", "Resin mixing station", "Sealing iron", "PVA measuring set", "Vacuum lines & manifolds", "PPE sets"];
 const qualitySafetyList = ["Torque tester", "Load test jig", "Digital weighing scale", "First aid station", "Fire extinguisher", "Emergency eye wash"];
 const storageWorkspaceList = ["Tool cabinet/box", "Storage container", "Swivel chair", "Workbench for assembly", "Workbench with drawer unit"];
+const generalToolsList = ["Bending brace", "Charger 100-240V AC 50-60Hz", "Complete toolbox", "Curved seaming pliers", "Cutting knife", "Double open-end spanner set", "Drill bit set for metal", "Drill bit set for wood", "Half round leather knife", "Set of hexagon bits", "Knives", "Last cutter", "Pipe reamer", "Pipe spanner set", "Precision saw", "Revolving eyelet punch", "Sanding drum set", "Scissors set (pinking shears, wave cut scissors, curved scissors, plaster scissors)", "Scriber", "Sole cutter", "Spring clamp", "Stapler", "Staple remover", "Tack remover", "Tap and die set, HSS", "Tracing wheel", "Tweezers", "Vice jaws", "Vise jaws protector", "Wire hand brush", "Workbench for lamination resin work"];
+const clinicalConsumablesList = ["Examination beds", "Towels", "Plinths", "Pillows", "Blankets", "Mats", "Mackintosh", "Ergonomically-designed chairs", "Stools", "Sterilized Dressings", "Face Masks", "Disposable Gloves", "Wheel chairs", "Measuring devices & sensation"];
 
-// Items 1-79 that are not explicitly duplicated in Sections A-G
-const generalToolsList = ["Bending brace (Sets)", "Charger 100-240V AC 50-60Hz", "Complete toolbox", "Curved seaming pliers", "Cutting knife", "Double open-end spanner set (Set)", "Drill bit set for metal (Set)", "Drill bit set for wood (Set)", "Half round leather knife", "Set of hexagon bits (Set)", "Knives", "Last cutter", "Pipe reamer", "Pipe spanner set (Set)", "Precision saw", "Revolving eyelet punch", "Sanding drum set (Set)", "Scissors set (pinking shears, wave cut scissors, curved scissors, plaster scissors) (Set)", "Scriber", "Sole cutter", "Spring clamp", "Stapler", "Staple remover", "Tack remover", "Tap and die set, HSS (Set)", "Tracing wheel", "Tweezers", "Vice jaws", "Vise jaws protector", "Wire hand brush", "Workbench for lamination resin work"];
-
-// Clinical & Examination items extracted from "OTHERS"
-const clinicalConsumablesList = ["Examination beds", "Towels", "Plinths", "Pillows", "Blankets", "Mats", "Mackintosh", "Ergonomically-designed chairs", "Stools", "Sterilized Dressings (Packs)", "Face Masks (Packs)", "Disposable Gloves (Packs)", "Wheel chairs", "Measuring devices & sensation"];
-
-
-// Map the keys to the StepFour dynamic renderer
 const ACADEMIC_CATEGORIES = [
-  { key: 'assessmentAlignment', title: 'Section A – Clinical Assessment & Alignment Tools' },
-  { key: 'castingShape', title: 'Section B – Casting & Shape Capture' },
-  { key: 'fabrication', title: 'Section C – Fabrication' },
-  { key: 'machines', title: 'Section D – Machines' },
-  { key: 'lamination', title: 'Section E – Lamination' },
-  { key: 'qualitySafety', title: 'Section F – Quality & Safety' },
-  { key: 'storageWorkspace', title: 'Section G – Storage & Workspace' },
+  { key: 'assessmentAlignment', title: 'SECTION A – CLINICAL ASSESSMENT & ALIGNMENT TOOLS' },
+  { key: 'castingShape', title: 'SECTION B – CASTING & SHAPE CAPTURE' },
+  { key: 'fabrication', title: 'SECTION C – FABRICATION' },
+  { key: 'machines', title: 'SECTION D – MACHINES' },
+  { key: 'lamination', title: 'SECTION E – LAMINATION' },
+  { key: 'qualitySafety', title: 'SECTION F – QUALITY & SAFETY' },
+  { key: 'storageWorkspace', title: 'SECTION G – STORAGE & WORKSPACE' },
   { key: 'generalTools', title: 'General Workshop Tools & Accessories' },
   { key: 'clinicalConsumables', title: 'Examination & Clinical Consumables' }
 ];
@@ -89,7 +83,6 @@ export default function ProstheticsAcademicAssessment() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [showIncompleteWarning, setShowIncompleteWarning] = useState(false);
 
-  // GLOBAL FORM STATE
   const [formData, setFormData] = useState({
     stepOne: {
       lecturers: [{ id: 'lec_1', name: '', gender: '', qualification: '', designation: '', license: '', cpds: [{ id: 'c_1', title: '' }], pgCerts: [{ id: 'p_1', title: '' }] }],
@@ -113,17 +106,17 @@ export default function ProstheticsAcademicAssessment() {
   const handleNext = () => { if (currentStep < totalSteps) { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
   const handlePrev = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
 
-  // --- UPDATE EQUIPMENT HANDLER FOR STEP 4 ---
   const updateEquipmentCategory = (categoryKey: string, index: number, field: string, value: any) => {
-    const updatedCategory = [...(formData.stepFour as any)[categoryKey]];
-    updatedCategory[index] = { ...updatedCategory[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      stepFour: { ...prev.stepFour, [categoryKey]: updatedCategory }
-    }));
+    setFormData(prev => {
+      const updatedCategory = [...(prev.stepFour as any)[categoryKey]];
+      updatedCategory[index] = { ...updatedCategory[index], [field]: value };
+      return {
+        ...prev,
+        stepFour: { ...prev.stepFour, [categoryKey]: updatedCategory }
+      };
+    });
   };
 
-  // --- VALIDATION ENGINE ---
   const checkIncompleteFields = () => {
     const allEq = Object.values(formData.stepFour).flat();
     const allItems = [...formData.stepTwo.spaces, ...formData.stepThree.clinicalTraining, ...allEq];
@@ -139,14 +132,19 @@ export default function ProstheticsAcademicAssessment() {
     setShowIncompleteWarning(false);
     setIsSubmitting(true);
     
-    // SMART FORMATTER: Replaces blank/skipped inputs with "-"
     const formatList = (list: any[]) => list.map(item => ({
       ...item,
       isAvailable: item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable),
       availableQuantity: item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity)
     }));
 
-    const allEquipmentRaw = Object.values(formData.stepFour).flat();
+    const allEquipmentRaw = Object.entries(formData.stepFour).flatMap(([key, items]) => {
+      const cat = ACADEMIC_CATEGORIES.find(c => c.key === key);
+      return [
+        { isCategoryHeader: true, item: cat ? cat.title : key.toUpperCase() },
+        ...(items as any[])
+      ];
+    });
 
     const payload = { 
         lecturers: formData.stepOne.lecturers, 
@@ -210,7 +208,6 @@ export default function ProstheticsAcademicAssessment() {
         {currentStep === 4 && <StepFour data={formData.stepFour} categories={ACADEMIC_CATEGORIES} updateCategory={updateEquipmentCategory} onPrev={handlePrev} onSubmit={handleInitialSubmit} isSubmitting={isSubmitting} />}
       </main>
 
-      {/* SMARTER WARNING MODAL */}
       {showIncompleteWarning && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
@@ -233,7 +230,6 @@ export default function ProstheticsAcademicAssessment() {
         </div>
       )}
 
-      {/* SUCCESS MODAL */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">

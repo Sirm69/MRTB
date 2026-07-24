@@ -77,7 +77,6 @@ const vestibularList = [
   "ENG/VNG System", "Infrared Video Goggles", "Frenzel Goggles", "Caloric Irrigator", "Rotary Chair", "VEMP Machine", "Computer And Balance Software", "Posturography System", "Foam Balance Pad", "Gait Assessment Walkway", "Dix-Hall pike Couch/Examination", "Safety Harness", "Vestibular Rehab Exercise Tools"
 ];
 
-// CORRECTED: Battery and Charger System sharing the same row!
 const cochlearImplantList = [
   "Cochlear Implant Programing Software", "Mapping", "Speech Processor", "Transmitting Coil", "Telemetry/ECAP System", "Speech Perception Test Materials (Set)", "CI Troubleshooting Kit (Set)", 
   "Battery and Charger System:", "- Battery System", "- Charger System", 
@@ -92,7 +91,6 @@ const tinnitusPublicHealthList = [
   "Clinical Audiometer", "High-Frequency Audiometer", "Tinnitus Matching Modules", "Loudness Discomfort Level (LDL) Tools", "Tinnitus Questionnaires (THI,TFI)", "Sound Therapy Generators", "Tinnitus Maskers", "Combination Hearing Aids (Set)", "White Noise Generators", "Counselling Software/CBT Materials", "Relaxation Audio Library", "Public Health Screening Audiometer", "OAE Screener", "Noise Awareness Education Kits (Set)", "Community Outreach IEC Materials (Set)", "Ear Protection Demonstration Kits (Set)"
 ];
 
-// Map the keys to the StepThree dynamic renderer (12 Categories)
 const CLINICAL_CATEGORIES = [
   { key: 'diagnostic', title: 'i. Diagnostic Equipment' },
   { key: 'safetyEquipment', title: 'ii. Safety equipment' },
@@ -143,17 +141,17 @@ export default function AudiologyClinicalAssessment() {
   const handleNext = () => { if (currentStep < totalSteps) { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
   const handlePrev = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
 
-  // --- UPDATE EQUIPMENT HANDLER FOR STEP 3 ---
   const updateEquipmentCategory = (categoryKey: string, index: number, field: string, value: any) => {
-    const updatedCategory = [...(formData.stepThree as any)[categoryKey]];
-    updatedCategory[index] = { ...updatedCategory[index], [field]: value };
-    setFormData(prev => ({
-      ...prev,
-      stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
-    }));
+    setFormData(prev => {
+      const updatedCategory = [...(prev.stepThree as any)[categoryKey]];
+      updatedCategory[index] = { ...updatedCategory[index], [field]: value };
+      return {
+        ...prev,
+        stepThree: { ...prev.stepThree, [categoryKey]: updatedCategory }
+      };
+    });
   };
 
-  // --- VALIDATION ENGINE ---
   const checkIncompleteFields = () => {
     const allEq = Object.values(formData.stepThree).flat();
     const allItems = [...formData.stepTwo.spaces, ...allEq];
@@ -169,17 +167,23 @@ export default function AudiologyClinicalAssessment() {
     setShowIncompleteWarning(false);
     setIsSubmitting(true);
     
-    // SMART FORMATTER: Replaces blank/skipped inputs with "-"
     const formatList = (list: any[]) => list.map(item => ({
       ...item,
       isAvailable: item.isHeader ? 'Header' : (item.isAvailable === '' ? '-' : item.isAvailable),
       availableQuantity: item.isHeader ? 'Header' : ((item.isAvailable === 'Yes' && item.availableQuantity === '') ? '-' : item.availableQuantity)
     }));
 
-    const allEquipmentRaw = Object.values(formData.stepThree).flat();
+    // Inject unique category heading segments right before hit API
+    const allEquipmentRaw = Object.entries(formData.stepThree).flatMap(([key, items]) => {
+      const cat = CLINICAL_CATEGORIES.find(c => c.key === key);
+      return [
+        { isCategoryHeader: true, item: cat ? cat.title : key.toUpperCase() },
+        ...(items as any[])
+      ];
+    });
 
     const payload = { 
-        physiotherapists: formData.stepOne.audiologists, 
+        audiologists: formData.stepOne.audiologists, 
         supportStaff: formData.stepOne.supportStaff,
         spaces: formatList(formData.stepTwo.spaces), 
         equipment: formatList(allEquipmentRaw),
@@ -238,7 +242,6 @@ export default function AudiologyClinicalAssessment() {
         {currentStep === 3 && <StepThree data={formData.stepThree} categories={CLINICAL_CATEGORIES} updateCategory={updateEquipmentCategory} onPrev={handlePrev} onSubmit={handleInitialSubmit} isSubmitting={isSubmitting} />}
       </main>
 
-      {/* SMARTER WARNING MODAL */}
       {showIncompleteWarning && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
@@ -261,7 +264,6 @@ export default function AudiologyClinicalAssessment() {
         </div>
       )}
 
-      {/* SUCCESS MODAL */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-[1px] px-4">
           <div className="bg-white rounded-[20px] shadow-2xl px-6 py-6 w-full max-w-[340px] flex flex-col items-center text-center animate-in zoom-in-95 duration-200">

@@ -1,19 +1,29 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreVertical, Edit2, Ban, CheckCircle, Trash2, Building } from 'lucide-react';
+import { MoreVertical, Edit2, UserX, UserCheck, ShieldPlus, Trash2, RefreshCcw } from 'lucide-react';
+
+interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  staffId: string;
+  role: string;
+  status: string;
+}
 
 interface AdminActionMenuProps {
-  admin: any;
-  onEdit: (admin: any) => void;
-  onToggleStatus: (admin: any) => void;
-  onAssign: (admin: any) => void;
-  onDelete: (admin: any) => void;
+  admin: AdminUser;
+  onEdit: (admin: AdminUser) => void;
+  onToggleStatus: (admin: AdminUser) => void;
+  onAssign: (admin: AdminUser) => void;
+  onDelete: (admin: AdminUser) => void;
 }
 
 export default function AdminActionMenu({ admin, onEdit, onToggleStatus, onAssign, onDelete }: AdminActionMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -24,40 +34,57 @@ export default function AdminActionMenu({ admin, onEdit, onToggleStatus, onAssig
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const isPending = admin.status === 'pending_approval';
+  const isRejected = admin.status.toLowerCase() === 'rejected';
+
   return (
     <div className="relative" ref={menuRef}>
       <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-400 hover:text-[#65A30D] hover:bg-[#EEF6DF] rounded-full transition-colors"
+        onClick={() => setIsOpen(!isOpen)} 
+        className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
       >
         <MoreVertical size={18} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-[110%] w-[220px] bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 animate-in fade-in zoom-in-95 duration-200">
           
-          <button onClick={() => { onEdit(admin); setIsOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <Edit2 size={15} className="text-gray-400" /> Edit Admin Details
+          <button 
+            onClick={() => { setIsOpen(false); onEdit(admin); }} 
+            className="w-full text-left px-4 py-2.5 text-[13px] font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+          >
+            {isRejected ? <RefreshCcw size={14} className="text-orange-500" /> : <Edit2 size={14} className="text-[#65A30D]" />} 
+            {isRejected ? 'Appeal / Edit Profile' : 'Edit Profile'}
           </button>
-          
-          <button onClick={() => { onAssign(admin); setIsOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            <Building size={15} className="text-gray-400" /> Assign Organization
-          </button>
+
+          {/* HIDE THESE OPTIONS IF PENDING OR REJECTED */}
+          {!isPending && !isRejected && (
+            <>
+              <button 
+                onClick={() => { setIsOpen(false); onAssign(admin); }} 
+                className="w-full text-left px-4 py-2.5 text-[13px] font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              >
+                <ShieldPlus size={14} className="text-blue-500" /> Assign Organizations
+              </button>
+
+              <button 
+                onClick={() => { setIsOpen(false); onToggleStatus(admin); }} 
+                className={`w-full text-left px-4 py-2.5 text-[13px] font-bold flex items-center gap-2 transition-colors hover:bg-gray-50 ${admin.status === 'Active' ? 'text-orange-600' : 'text-green-600'}`}
+              >
+                {admin.status === 'Active' ? <UserX size={14} /> : <UserCheck size={14} />}
+                {admin.status === 'Active' ? 'Suspend Account' : 'Restore Account'}
+              </button>
+            </>
+          )}
 
           <div className="w-full h-[1px] bg-gray-100 my-1"></div>
-
-          <button onClick={() => { onToggleStatus(admin); setIsOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            {admin.status === 'Active' ? (
-              <><Ban size={15} className="text-yellow-600" /> Suspend Access</>
-            ) : (
-              <><CheckCircle size={15} className="text-[#65A30D]" /> Restore Access</>
-            )}
+          
+          <button 
+            onClick={() => { setIsOpen(false); onDelete(admin); }} 
+            className="w-full text-left px-4 py-2.5 text-[13px] font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+          >
+            <Trash2 size={14} /> Delete Admin
           </button>
-
-          <button onClick={() => { onDelete(admin); setIsOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-red-600 hover:bg-red-50 transition-colors">
-            <Trash2 size={15} className="text-red-500" /> Permanently Delete
-          </button>
-
         </div>
       )}
     </div>

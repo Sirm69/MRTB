@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link'; // <-- Imported Link for native routing!
-import { Calendar, Bell, Download, Building2, CalendarDays, Loader2, Filter, AlertCircle, CheckCircle2, Users, LogOut, XCircle } from 'lucide-react';
+import Link from 'next/link'; 
+import { Calendar, Bell, Download, Building2, CalendarDays, Loader2, Filter, AlertCircle, CheckCircle2, Users, LogOut, XCircle, ClipboardCheck, FileText, AlertTriangle } from 'lucide-react';
 import OrganizationDrawer from '../components/OrganizationDrawer';
+import { generateAccreditationReportPDF } from '../../components/pdfGenerator';
 
 interface ApplicationData {
   id: number;
@@ -16,6 +17,7 @@ interface ApplicationData {
   assessment_status: string | null;
   is_appeal?: boolean;
   is_paid?: boolean; 
+  has_finalized_report?: boolean;
 }
 
 export default function AdminDashboard() {
@@ -24,77 +26,177 @@ export default function AdminDashboard() {
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [adminRole, setAdminRole] = useState<string>(''); 
+  const [adminEmail, setAdminEmail] = useState<string>(''); 
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [checkedOrgId, setCheckedOrgId] = useState<number | null>(null);
   
-  const [activeTab, setActiveTab] = useState<"action_required" | "all" | "rejected">("action_required");
+  const [activeTab, setActiveTab] = useState<"action_required" | "awaiting_registrar" | "all" | "rejected" | "field_reports" | "scheduled">("action_required");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentFilter, setCurrentFilter] = useState("all");
-
-  const fetchApplications = async () => {
-    setIsLoading(true);
-    const token = localStorage.getItem('adminAccessToken') || sessionStorage.getItem('adminAccessToken');
-    const role = localStorage.getItem('adminRole') || sessionStorage.getItem('adminRole') || localStorage.getItem('role') || '';
-    
-    if (!token) {
-      router.push('/admin/login');
-      return;
-    }
-    
-    setAdminRole(role);
-    
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/applications`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setApplications(data.data || []);
-      } else {
-        if (response.status === 401 || response.status === 403) router.push('/admin/login');
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
+  // Custom states for admin pending approvals
+  const [pendingAdminsCount, setPendingAdminsCount] = useState<number>(0);
+  
+  // Custom Confirmation state
+  const [showConfirmLogout, setShowConfirmLogout] = useState(false);
 
   useEffect(() => {
+    const role = localStorage.getItem('adminRole') || sessionStorage.getItem('adminRole') || localStorage.getItem('role') || '';
+    setAdminRole(role);
+    const email = localStorage.getItem('adminEmail') || sessionStorage.getItem('adminEmail') || '';
+    setAdminEmail(email);
+
+    // --- THE SMART BOUNCER ---
+    // Instantly redirect Field Team members to their own dedicated application folder
+    if (role === 'admin_field' || role === 'Field Team') {
+      router.push('/field-team/dashboard');
+      return;
+    }
+
+    const fetchApplications = async () => {
+      setIsLoading(true);
+      const token = localStorage.getItem('adminAccessToken') || sessionStorage.getItem('adminAccessToken');
+      
+      if (!token) {
+        router.push('/admin/login');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/applications`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setApplications(data.data || []);
+        } else {
+          if (response.status === 401 || response.status === 403) router.push('/admin/login');
+        }
+
+        // Fetch pending admins list to display notifications on dashboard
+        if (role === 'admin_registrar') {
+          const adminsRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/list`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
+          });
+          if (adminsRes.ok) {
+            const adminsData = await adminsRes.json();
+            const pendingAdmins = (adminsData.data || []).filter((a: any) => a.status === 'pending_approval');
+            setPendingAdminsCount(pendingAdmins.length);
+          }
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchApplications();
   }, [router]);
 
   const handleLogout = () => {
-    if (confirm("Are you sure you want to securely log out?")) {
-      localStorage.removeItem('adminAccessToken');
-      localStorage.removeItem('adminRefreshToken');
-      localStorage.removeItem('adminRole');
-      sessionStorage.removeItem('adminAccessToken');
-      sessionStorage.removeItem('adminRefreshToken');
-      sessionStorage.removeItem('adminRole');
-      router.push('/admin/login');
+    setShowConfirmLogout(true);
+  };
+
+  const confirmLogoutAction = () => {
+    localStorage.removeItem('adminAccessToken');
+    localStorage.removeItem('adminRefreshToken');
+    localStorage.removeItem('adminRole');
+    sessionStorage.removeItem('adminAccessToken');
+    sessionStorage.removeItem('adminRefreshToken');
+    sessionStorage.removeItem('adminRole');
+    router.push('/admin/login');
+  };
+
+  const handleDownloadCheckedReport = async () => {
+    if (!checkedOrgId) {
+      alert("Please select a facility checkbox to download their evaluation report.");
+      return;
+    }
+
+    const token = localStorage.getItem('adminAccessToken') || sessionStorage.getItem('adminAccessToken');
+    if (!token) {
+      alert("Session expired. Please log in again.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/user/${checkedOrgId}`, {
+        method: 'GET',
+        headers: { 
+          'Authorization': `Bearer ${token}`, 
+          'ngrok-skip-browser-warning': 'true' 
+        }
+      });
+
+      if (response.ok) {
+        const resData = await response.json();
+        const profile = resData.profile;
+        const report = resData.inspection_report;
+        const fullAssessment = resData.full_assessment;
+
+        // Check if final decision has been made
+        const isFinalDecisionMade = profile?.status === "approved" || profile?.status === "rejected" || profile?.assessment_status === "approved" || profile?.assessment_status === "rejected";
+
+        if (!isFinalDecisionMade) {
+          alert("Evaluation Report is not yet available because the final accreditation decision has not been made by the Registrar.");
+          return;
+        }
+
+        // Open print view in new tab
+        window.open(`/report/print?id=${checkedOrgId}`, '_blank');
+      } else {
+        alert("Failed to retrieve organization details.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error occurred while fetching report details.");
     }
   };
 
   const isActionRequired = (app: ApplicationData) => {
     const activeStatus = app.status === 'approved' && app.assessment_status ? app.assessment_status : app.status;
-    if (adminRole === 'admin_reviewer') return activeStatus === 'under_review' || activeStatus === 'submitted';
-    if (adminRole === 'admin_registrar') return activeStatus === 'recommended_accept' || activeStatus === 'recommended_reject';
+    if (adminRole === 'admin_reviewer') return activeStatus === 'under_review' || activeStatus === 'submitted' || activeStatus === 'finalized';
+    if (adminRole === 'admin_registrar') return activeStatus === 'recommended_accept' || activeStatus === 'recommended_reject' || activeStatus === 'forwarded';
     return false;
   };
 
-  const actionRequiredCount = applications.filter(isActionRequired).length;
+  const actionRequiredCount = applications.filter(isActionRequired).length + (adminRole === 'admin_registrar' ? pendingAdminsCount : 0);
   
+  const awaitingRegistrarCount = applications.filter(app => {
+    const activeStatus = app.status === 'approved' && app.assessment_status ? app.assessment_status : app.status;
+    return activeStatus === 'recommended_accept' || activeStatus === 'recommended_reject' || activeStatus === 'forwarded';
+  }).length;
+
   const rejectedCount = applications.filter(app => {
     const activeStatus = app.status === 'approved' && app.assessment_status ? app.assessment_status : app.status;
     return activeStatus === 'rejected';
+  }).length;
+
+  const fieldReportsCount = applications.filter(app => {
+    return app.status === 'approved' && app.has_finalized_report === true;
+  }).length;
+
+  const scheduledCount = applications.filter(app => {
+    return app.status === 'approved' && app.has_finalized_report !== true && (app.assessment_status === 'approved' || app.assessment_status === 'inspected');
   }).length;
 
   const tabFilteredApps = applications.filter(app => {
     const activeStatus = app.status === 'approved' && app.assessment_status ? app.assessment_status : app.status;
     if (activeTab === 'all') return true;
     if (activeTab === 'action_required') return isActionRequired(app);
+    if (activeTab === 'awaiting_registrar') {
+      return activeStatus === 'recommended_accept' || activeStatus === 'recommended_reject' || activeStatus === 'forwarded';
+    }
     if (activeTab === 'rejected') return activeStatus === 'rejected';
+    if (activeTab === 'field_reports') {
+      return app.status === 'approved' && app.has_finalized_report === true;
+    }
+    if (activeTab === 'scheduled') {
+      return app.status === 'approved' && app.has_finalized_report !== true && (app.assessment_status === 'approved' || app.assessment_status === 'inspected');
+    }
     return false;
   });
 
@@ -108,8 +210,23 @@ export default function AdminDashboard() {
     return true;
   });
 
-  const formatStatus = (status: string, assessmentStatus: string | null, isPaid: boolean = false) => {
+  const formatStatus = (status: string, assessmentStatus: string | null, isPaid: boolean = false, hasFinalizedReport: boolean = false) => {
     if (assessmentStatus) {
+      if (hasFinalizedReport) {
+        switch(assessmentStatus) {
+          case 'approved':
+            return <span className="text-[#066936] bg-[#E8F5E9] border border-[#CDE1B4] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Accredited</span>;
+          case 'rejected':
+            return <span className="text-red-650 bg-red-50 border border-red-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Accreditation Rejected</span>;
+          case 'forwarded':
+            return <span className="text-blue-600 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Await Decision</span>;
+          case 'finalized':
+            return <span className="text-purple-600 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Report Finalized</span>;
+          default:
+            return <span className="text-gray-600 bg-gray-50 border border-gray-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">{assessmentStatus.replace('_', ' ')}</span>;
+        }
+      }
+
       switch(assessmentStatus) {
         case 'submitted': 
         case 'under_review':
@@ -141,18 +258,22 @@ export default function AdminDashboard() {
     }
   };
 
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 size={48} className="animate-spin text-[#65A30D]" /></div>;
+  }
+
   return (
     <div className="pb-12 relative w-full">
       
       {/* TOP NAVIGATION */}
       <div className="flex justify-end items-center mb-6 gap-2 md:gap-5 w-full">
-        {adminRole === 'admin_reviewer' && (
-          // 👇 CONVERTED TO <Link> HERE
+        {(adminRole === 'admin_reviewer' || adminRole === 'admin_registrar') && (
           <Link 
             href="/admin/manage-admins"
             className="hidden md:flex items-center gap-2 bg-white px-4 h-[52px] rounded-full shadow-sm hover:shadow-md transition-shadow border border-gray-100 font-bold text-[13px] text-gray-700"
           >
-            <Users size={18} className="text-[#65A30D]" /> Manage Admins
+            <Users size={18} className="text-[#65A30D]" /> 
+            {adminRole === 'admin_registrar' ? 'Approve Admins' : 'Manage Admins'}
           </Link>
         )}
 
@@ -170,7 +291,7 @@ export default function AdminDashboard() {
           </div>
           <div className="flex flex-col pr-1 md:pr-2 hidden sm:flex">
             <span className="text-xs md:text-sm font-bold text-gray-800 leading-tight">
-              {adminRole === 'admin_registrar' ? 'Registrar' : 'Super Admin'}
+              {adminRole === 'admin_registrar' ? 'Registrar' : (adminRole === 'admin_reviewer' && adminEmail === 'admin@mrtb.gov.ng') ? 'Super Admin' : adminRole === 'admin_reviewer' ? 'Reviewer' : 'Super Admin'}
             </span>
             <span className="text-[10px] md:text-[11px] text-gray-400">Portal Access</span>
           </div>
@@ -195,49 +316,77 @@ export default function AdminDashboard() {
           <button className="flex-1 lg:flex-none flex items-center justify-center gap-1.5 md:gap-2 border-2 border-dashed border-gray-300 text-gray-500 px-3 py-2 md:px-5 md:py-2.5 rounded-full hover:border-gray-400 font-bold text-[11px] md:text-[13px] transition-colors whitespace-nowrap">
              <CalendarDays size={14} className="md:w-4 md:h-4" /> <span className="hidden sm:inline">Jan 15 - Till date</span><span className="sm:hidden">Jan 15 - Today</span>
           </button>
-          <button className="flex-1 lg:flex-none flex items-center justify-center gap-1.5 md:gap-2 bg-[#65A30D] text-white px-4 py-2 md:px-8 md:py-3 rounded-full shadow-lg font-bold text-[11px] md:text-[13px] hover:bg-[#578d0b] transition-colors whitespace-nowrap">
-            <Download size={14} className="md:w-4 md:h-4" /> Export<span className="hidden sm:inline"> report</span>
+          <button 
+            onClick={handleDownloadCheckedReport}
+            className="flex-1 lg:flex-none flex items-center justify-center gap-1.5 md:gap-2 bg-[#65A30D] text-white px-4 py-2 md:px-8 md:py-3 rounded-full shadow-lg font-bold text-[11px] md:text-[13px] hover:bg-[#578d0b] transition-colors whitespace-nowrap"
+          >
+            <Download size={14} className="md:w-4 md:h-4" /> Download report
           </button>
         </div>
       </div>
 
       {/* SMART TABS */}
-      <div className="mb-5 md:mb-6 flex flex-wrap gap-2 md:gap-4 w-full">
-        <button onClick={() => {setActiveTab('action_required'); setCurrentFilter('all');}} className={`relative px-4 py-2 md:px-6 md:py-3 rounded-full font-bold text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-all ${activeTab === 'action_required' ? 'bg-[#65A30D] text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-50 shadow-sm'}`}>
-          <AlertCircle size={14} className="md:w-4 md:h-4" /> Action Required
+      <div className="mb-5 md:mb-6 flex flex-wrap gap-2 md:gap-4 w-full justify-center">
+        <button onClick={() => {setActiveTab('action_required'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'action_required' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+          <AlertCircle size={14} /> Action Required
           {actionRequiredCount > 0 && (
-            <span className={`ml-0.5 md:ml-1 px-1.5 md:px-2 py-0.5 rounded-full text-[9px] md:text-[11px] ${activeTab === 'action_required' ? 'bg-white text-[#65A30D]' : 'bg-red-100 text-red-600'}`}>{actionRequiredCount}</span>
-          )}
-        </button>
-        
-        <button onClick={() => {setActiveTab('rejected'); setCurrentFilter('all');}} className={`relative px-4 py-2 md:px-6 md:py-3 rounded-full font-bold text-xs md:text-sm flex items-center gap-1.5 md:gap-2 transition-all ${activeTab === 'rejected' ? 'bg-red-500 text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-50 shadow-sm'}`}>
-          <XCircle size={14} className="md:w-4 md:h-4" /> Rejected
-          {rejectedCount > 0 && (
-            <span className={`ml-0.5 md:ml-1 px-1.5 md:px-2 py-0.5 rounded-full text-[9px] md:text-[11px] ${activeTab === 'rejected' ? 'bg-white text-red-500' : 'bg-gray-100 text-gray-600'}`}>{rejectedCount}</span>
+            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'action_required' ? 'bg-white text-[#5D9C0E]' : 'bg-red-100 text-red-650'}`}>{actionRequiredCount}</span>
           )}
         </button>
 
-        <button onClick={() => {setActiveTab('all'); setCurrentFilter('all');}} className={`px-4 py-2 md:px-6 md:py-3 rounded-full font-bold text-xs md:text-sm transition-all ${activeTab === 'all' ? 'bg-[#65A30D] text-white shadow-md' : 'bg-white text-gray-500 hover:bg-gray-50 shadow-sm'}`}>
+        {adminRole === 'admin_reviewer' && (
+          <button onClick={() => {setActiveTab('awaiting_registrar'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'awaiting_registrar' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+            <AlertCircle size={14} /> Awaiting Registrar
+            {awaitingRegistrarCount > 0 && (
+              <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'awaiting_registrar' ? 'bg-white text-blue-600' : 'bg-blue-50 text-blue-600'}`}>{awaitingRegistrarCount}</span>
+            )}
+          </button>
+        )}
+        
+        <button onClick={() => {setActiveTab('rejected'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'rejected' ? 'bg-red-50 text-red-600 border border-red-250 shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+          <XCircle size={14} /> Rejected
+          {rejectedCount > 0 && (
+            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'rejected' ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-600'}`}>{rejectedCount}</span>
+          )}
+        </button>
+
+        <button onClick={() => {setActiveTab('field_reports'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'field_reports' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+          <ClipboardCheck size={14} /> Reports
+          {fieldReportsCount > 0 && (
+            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'field_reports' ? 'bg-white text-[#5D9C0E]' : 'bg-[#EEF6DF] text-[#5D9C0E]'}`}>{fieldReportsCount}</span>
+          )}
+        </button>
+
+        <button onClick={() => {setActiveTab('scheduled'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'scheduled' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+          <CalendarDays size={14} /> Inspection Scheduled
+          {scheduledCount > 0 && (
+            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'scheduled' ? 'bg-white text-[#5D9C0E]' : 'bg-[#EEF6DF] text-[#5D9C0E]'}`}>{scheduledCount}</span>
+          )}
+        </button>
+
+        <button onClick={() => {setActiveTab('all'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'all' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
           All Applications
+          {applications.length > 0 && (
+            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'all' ? 'bg-white text-[#5D9C0E]' : 'bg-[#EEF6DF] text-[#5D9C0E]'}`}>{applications.length}</span>
+          )}
         </button>
       </div>
 
       {/* DATA TABLE SECTION */}
-      <div className="bg-white rounded-[20px] md:rounded-[24px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] overflow-hidden min-h-[400px] w-full">
+      <div className="bg-white rounded-[20px] md:rounded-[24px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] overflow-hidden min-h-[400px] w-full border border-gray-100">
         <div className="overflow-x-auto pb-4 md:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="min-w-[800px] lg:min-w-[1050px]">
             
-            <div className="flex items-center px-6 md:px-8 py-4 md:py-6 border-b border-gray-50">
+            <div className="flex items-center px-6 md:px-8 py-4 md:py-5 border-b border-gray-50 bg-[#FAFCF8]">
               <div className="w-[50px] md:w-[60px]"></div>
               <div className="w-[180px] md:w-[240px]"></div>
-              <div className="w-[140px] md:w-[160px] text-[13px] md:text-[15px] font-semibold text-gray-400">Profession</div>
-              <div className="w-[180px] md:w-[200px] text-[13px] md:text-[15px] font-semibold text-gray-400">Status</div>
-              <div className="flex-1 text-[13px] md:text-[15px] font-semibold text-gray-400">Email</div>
+              <div className="w-[140px] md:w-[160px] text-[12px] md:text-[13px] font-bold text-gray-500 uppercase tracking-wider">Profession</div>
+              <div className="flex-1 text-[12px] md:text-[13px] font-bold text-gray-500 uppercase tracking-wider">Status</div>
               
               <div className="flex items-center gap-3 md:gap-4 pr-2">
                 <input type="text" placeholder="Search here" className="w-[160px] md:w-[200px] border border-gray-200 rounded-full py-2 px-4 md:py-2.5 md:px-5 text-xs md:text-sm outline-none focus:border-[#65A30D]" />
                 <div className="relative">
-                  <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-1.5 md:gap-2 border px-3 py-2 md:px-4 md:py-2.5 rounded-full text-xs md:text-[13px] font-bold transition-colors ${currentFilter !== 'all' ? 'bg-[#EEF6DF] border-[#65A30D] text-[#65A30D]' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'}`}>
+                  <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-1.5 md:gap-2 border px-3 py-2 md:px-4 md:py-2.5 rounded-full text-xs md:text-[13px] font-bold transition-colors ${currentFilter !== 'all' ? 'bg-[#EEF6DF] border-[#65A30D] text-[#65A30D]' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm'}`}>
                     <Filter size={12} className="md:w-3.5 md:h-3.5" /> Filter
                   </button>
                   
@@ -255,9 +404,29 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              {isLoading ? (
-                <div className="flex justify-center py-12"><Loader2 size={32} className="animate-spin text-[#65A30D]" /></div>
-              ) : finalFilteredApplications.length === 0 ? (
+              {activeTab === 'action_required' && adminRole === 'admin_registrar' && pendingAdminsCount > 0 && (
+                <div className="mx-6 md:mx-8 mt-4 mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-300">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-amber-100 p-2 rounded-xl text-amber-600 shrink-0">
+                      <Users size={20} />
+                    </div>
+                    <div>
+                      <h4 className="text-amber-800 font-extrabold text-[14px] leading-tight">Admin Approval Required</h4>
+                      <p className="text-amber-750 text-[12px] font-medium mt-0.5">
+                        There are {pendingAdminsCount} administrator account(s) pending your review and approval.
+                      </p>
+                    </div>
+                  </div>
+                  <Link 
+                    href="/admin/manage-admins"
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-5 py-2.5 rounded-full transition-all shadow-sm shrink-0 uppercase tracking-wider"
+                  >
+                    Manage Admins
+                  </Link>
+                </div>
+              )}
+
+              {finalFilteredApplications.length === 0 ? (
                 <div className="text-center py-16 flex flex-col items-center">
                   <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4"><CheckCircle2 size={32} className="text-gray-300" /></div>
                   <h3 className="text-gray-900 font-bold text-lg mb-1">You're all caught up!</h3>
@@ -265,8 +434,15 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 finalFilteredApplications.map((row, index) => (
-                  <div key={row.id} className={`flex items-center px-6 md:px-8 py-4 md:py-5 hover:bg-gray-50/50 transition-colors ${index % 2 !== 0 ? 'bg-[#FAFCF8]' : 'bg-white'}`}>
-                    <div className="w-[50px] md:w-[60px]"><input type="checkbox" className="w-4 h-4 md:w-5 md:h-5 rounded-[4px] border-2 border-gray-300 text-[#65A30D]" /></div>
+                  <div key={row.id} className={`flex items-center px-6 md:px-8 py-4 md:py-5 hover:bg-gray-50/50 transition-colors border-b border-gray-50/50 ${index % 2 !== 0 ? 'bg-[#FAFCF8]/50' : 'bg-white'}`}>
+                    <div className="w-[50px] md:w-[60px]">
+                      <input 
+                        type="checkbox" 
+                        checked={checkedOrgId === row.id}
+                        onChange={() => setCheckedOrgId(checkedOrgId === row.id ? null : row.id)}
+                        className="w-4 h-4 md:w-5 md:h-5 rounded-[4px] border-2 border-gray-300 text-[#65A30D] cursor-pointer" 
+                      />
+                    </div>
                     
                     <div onClick={() => setSelectedUserId(row.id)} className="w-[180px] md:w-[240px] cursor-pointer pr-2 flex flex-col items-start gap-1">
                       <span className="text-[14px] md:text-[15px] text-[#65A30D] hover:underline font-bold leading-tight">{row.name}</span>
@@ -279,13 +455,12 @@ export default function AdminDashboard() {
                     
                     <div className="w-[140px] md:w-[160px] text-[13px] md:text-[14px] text-gray-500 font-medium">{row.profession}</div>
                     
-                    <div className="w-[180px] md:w-[200px] pr-2">{formatStatus(row.status, row.assessment_status, row.is_paid)}</div>
+                    <div className="flex-1 pr-2">{formatStatus(row.status, row.assessment_status, row.is_paid, row.has_finalized_report)}</div>
                     
-                    <div className="flex-1 text-[13px] md:text-[14px] text-gray-500 truncate pr-4">{row.email}</div>
                     <div className="pr-4">
                       <button 
                         onClick={() => setSelectedUserId(row.id)} 
-                        className="px-4 py-1.5 md:px-6 md:py-2 border border-gray-200 rounded-lg text-xs md:text-[13px] font-bold text-[#65A30D] hover:bg-gray-50 transition-colors shadow-sm"
+                        className="px-4 py-1.5 md:px-6 md:py-2 border border-gray-200 rounded-full text-xs md:text-[13px] font-bold text-[#65A30D] hover:bg-[#EEF6DF] transition-colors shadow-sm"
                       >
                         Review
                       </button>
@@ -303,8 +478,37 @@ export default function AdminDashboard() {
           userId={selectedUserId} 
           adminRole={adminRole}
           onClose={() => setSelectedUserId(null)}
-          onRefreshTable={fetchApplications}
+          onRefreshTable={() => window.location.reload()}
         />
+      )}
+
+      {/* CUSTOM CONFIRMATION OVERLAY */}
+      {showConfirmLogout && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
+          <div className="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-[280px] animate-in zoom-in-95 duration-200 border border-gray-100 text-center flex flex-col items-center">
+            <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-3 border border-amber-100 text-amber-500">
+              <AlertTriangle size={20} />
+            </div>
+            <h3 className="text-[13px] font-bold text-gray-900 mb-1.5">Secure Logout</h3>
+            <p className="text-[11px] text-gray-500 mb-5 leading-relaxed font-medium">
+              Are you sure you want to securely log out of your session?
+            </p>
+            <div className="flex gap-2.5 w-full">
+              <button 
+                onClick={() => setShowConfirmLogout(false)} 
+                className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 font-bold text-[11px] hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmLogoutAction} 
+                className="flex-1 py-2 rounded-xl bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-bold text-[11px] shadow-sm transition-all"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
