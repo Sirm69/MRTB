@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SpeechTherapyClinicalStep1 } from '@/app/field-team/components/SpeechTherapyClinicalStep1';
 import { SpeechTherapyClinicalStep2 } from '@/app/field-team/components/SpeechTherapyClinicalStep2';
@@ -25,7 +25,7 @@ import { ProstheticsOrthoticsClinicalStep2 } from '@/app/field-team/components/P
 import { FormEReportStep3 } from '@/app/field-team/components/FormEReportStep3';
 import { FileText } from 'lucide-react';
 
-export default function ExaminePage() {
+function ExamineContent() {
   const forceScrollToTop = () => {
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
@@ -489,7 +489,7 @@ export default function ExaminePage() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
@@ -500,7 +500,7 @@ export default function ExaminePage() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
@@ -511,7 +511,7 @@ export default function ExaminePage() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
@@ -522,7 +522,7 @@ export default function ExaminePage() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
@@ -533,7 +533,7 @@ export default function ExaminePage() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
@@ -643,5 +643,17 @@ export default function ExaminePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ExaminePage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full min-h-screen flex items-center justify-center bg-[#FAFAFA]">
+        <p className="text-gray-500 text-xs font-semibold animate-pulse">Loading data environment...</p>
+      </div>
+    }>
+      <ExamineContent />
+    </Suspense>
   );
 }
