@@ -1,50 +1,82 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, KeyRound, ArrowRight, Loader2, XCircle, CheckCircle, Mail } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, KeyRound, ArrowRight, Loader2, XCircle, CheckCircle, Eye, EyeOff, Lock } from 'lucide-react';
 
-export default function ForgotPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token') || '';
+  const email = searchParams.get('email') || '';
+
   const brandGreen = "#066936";
   const accentYellow = "#d8f22f";
 
   const [logoError, setLogoError] = useState(false);
-  const [email, setEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"error" | "success" | null>(null);
-  const [isSent, setIsSent] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setMessage(null);
     setMessageType(null);
 
+    if (!token || !email) {
+      setMessage("Invalid reset link. Please request a new password reset link.");
+      setMessageType("error");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setMessage("Password must be at least 6 characters long.");
+      setMessageType("error");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setMessage("Passwords do not match. Please ensure both passwords match.");
+      setMessageType("error");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/forgot-password`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true'
         },
-        body: JSON.stringify({ email: email })
+        body: JSON.stringify({
+          token: token,
+          email: email,
+          new_password: newPassword
+        })
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message || "A new password has been sent to your email address. (Check terminal output for simulated email)");
+        setMessage(data.message || "Your password has been updated successfully! Redirecting to login...");
         setMessageType("success");
-        setIsSent(true);
+        setIsSuccess(true);
+        setTimeout(() => router.push('/auth/login'), 2500);
       } else {
-        setMessage(data.detail || data.message || "Failed to reset password. Please verify your email address.");
+        setMessage(data.detail || data.message || "Failed to update password. Please check your reset link.");
         setMessageType("error");
       }
     } catch (error) {
-      console.error("Forgot Password Error:", error);
+      console.error("Reset Password Error:", error);
       setMessage("Could not connect to the server. Please check your network connection and try again.");
       setMessageType("error");
     } finally {
@@ -95,11 +127,11 @@ export default function ForgotPasswordPage() {
 
         <div className="flex flex-col items-center mb-6 relative z-10 text-center">
           <div className="w-12 h-12 bg-[#EEF6DF] rounded-full flex items-center justify-center mb-2">
-            <KeyRound size={22} className="text-[#066936]" />
+            <Lock size={22} className="text-[#5e9900]" />
           </div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Forgot Password</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Set New Password</h1>
           <p className="text-slate-500 text-[11px] mt-1 max-w-xs">
-            Enter the email address associated with your entity account and we will send you a new password.
+            Please enter your new password below for <span className="font-semibold text-slate-700">{email || 'your account'}</span>.
           </p>
         </div>
 
@@ -109,19 +141,51 @@ export default function ForgotPasswordPage() {
           <div className="w-full bg-[#96C93D]/85 backdrop-blur-sm rounded-[1.25rem] p-6 shadow-lg border border-white/20">
             <div className="space-y-4">
               
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-900 ml-1">Email Address</label>
+              {/* ENTER NEW PASSWORD */}
+              <div className="space-y-1 relative">
+                <label className="text-[11px] font-bold text-slate-900 ml-1">Enter New Password</label>
                 <div className="relative">
                   <input 
-                    type="email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="example@email.com" 
-                    disabled={loading || isSent}
-                    className="w-full bg-white/90 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-700 border-none outline-none focus:ring-2 focus:ring-white/50 transition-all disabled:opacity-60"
+                    type={showNewPassword ? "text" : "password"} 
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="****************" 
+                    disabled={loading || isSuccess}
+                    className="w-full bg-white/90 rounded-lg py-2.5 pl-4 pr-10 text-sm text-slate-700 border-none outline-none focus:ring-2 focus:ring-white/50 transition-all disabled:opacity-60"
                     required
                   />
-                  <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <button 
+                    type="button"
+                    disabled={loading || isSuccess}
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50"
+                  >
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* CONFIRM NEW PASSWORD */}
+              <div className="space-y-1 relative">
+                <label className="text-[11px] font-bold text-slate-900 ml-1">Confirm New Password</label>
+                <div className="relative">
+                  <input 
+                    type={showConfirmPassword ? "text" : "password"} 
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="****************" 
+                    disabled={loading || isSuccess}
+                    className="w-full bg-white/90 rounded-lg py-2.5 pl-4 pr-10 text-sm text-slate-700 border-none outline-none focus:ring-2 focus:ring-white/50 transition-all disabled:opacity-60"
+                    required
+                  />
+                  <button 
+                    type="button"
+                    disabled={loading || isSuccess}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50"
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
 
@@ -130,7 +194,7 @@ export default function ForgotPasswordPage() {
 
           {/* ACTION BUTTON */}
           <div className="mt-8">
-            {!isSent ? (
+            {!isSuccess ? (
               <button 
                 type="submit" 
                 disabled={loading}
@@ -139,11 +203,11 @@ export default function ForgotPasswordPage() {
                 {loading ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
-                    Sending Link...
+                    Updating Password...
                   </>
                 ) : (
                   <>
-                    Send Reset Link
+                    Update Password
                     <ArrowRight size={14} style={{ color: accentYellow }} className="group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -154,7 +218,7 @@ export default function ForgotPasswordPage() {
                 onClick={() => router.push('/auth/login')}
                 className="group flex items-center justify-center gap-2 bg-[#5e9900] hover:bg-[#4d7e00] text-white font-black text-[11px] uppercase tracking-wider py-4 px-12 rounded-full transition-all shadow-md active:scale-95 min-w-[220px]"
               >
-                Return to Login
+                Proceed to Login
                 <ArrowRight size={14} style={{ color: accentYellow }} className="group-hover:translate-x-1 transition-transform" />
               </button>
             )}
@@ -175,12 +239,24 @@ export default function ForgotPasswordPage() {
         )}
 
         <p className="mt-8 text-slate-500 text-xs font-medium relative z-10">
-          Remembered your password?{' '}
+          Return to{' '}
           <Link href="/auth/login" className="text-[#5e9900] font-bold hover:underline">
-            Sign In Here
+            Login Page
           </Link>
         </p>
       </main>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <Loader2 size={32} className="animate-spin text-[#5e9900]" />
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
