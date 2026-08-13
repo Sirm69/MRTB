@@ -5,6 +5,7 @@ import HeaderWrapper from "@/components/HeaderWrapper";
 import NextTopLoader from 'nextjs-toploader'; // <-- The new loader package!
 // Triggering Next.js dev rebuild for CSS refresh.
 import GlobalAlertProvider from "./components/GlobalAlertProvider";
+import VerifyModal from "@/app/components/VerifyModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,6 +37,9 @@ export default function RootLayout({
           speed={200} 
           shadow="0 0 10px #5D9C0E,0 0 5px #5D9C0E" 
         />
+
+        {/* Global Verification Modal Popup */}
+        <VerifyModal />
 
         {/* This wrapper handles the "Home Page Only" logic */}
         <HeaderWrapper />
