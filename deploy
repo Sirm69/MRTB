@@ -1,5 +1,5 @@
 git add .
-git commit -m "First wash"
+git commit -m "August Version"
 git push
 
 
