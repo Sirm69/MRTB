@@ -198,7 +198,7 @@ export default function OTPPage() {
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste} // --- NEW: Added onPaste event handler ---
-                  className="w-9 h-10 md:w-11 md:h-12 text-center text-lg font-bold bg-white text-slate-900 rounded-md border-none outline-none focus:ring-2 focus:ring-[#71b600] transition-all disabled:opacity-50"
+                  className="w-9 h-10 md:w-11 md:h-12 text-center text-lg font-bold bg-white text-slate-900 rounded-md border-none outline-none focus:ring-2 focus:ring-[#5e9900] transition-all disabled:opacity-50"
                 />
               ))}
             </div>
@@ -208,7 +208,7 @@ export default function OTPPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="bg-[#71b600] hover:bg-[#609a00] text-white font-bold text-sm tracking-widest py-3 px-16 rounded-full transition-all shadow-md active:scale-95 uppercase flex items-center justify-center min-w-[180px]"
+              className="bg-[#5e9900] hover:bg-[#4d7e00] text-white font-bold text-sm tracking-widest py-3 px-16 rounded-full transition-all shadow-md active:scale-95 uppercase flex items-center justify-center min-w-[180px]"
             >
               {loading ? (
                 <>
@@ -226,7 +226,7 @@ export default function OTPPage() {
             type="button" 
             onClick={handleResend}
             disabled={resendLoading}
-            className="text-[#71b600] font-bold underline transition-all hover:text-[#609a00] disabled:opacity-50 disabled:no-underline flex items-center"
+            className="text-[#5e9900] font-bold underline transition-all hover:text-[#4d7e00] disabled:opacity-50 disabled:no-underline flex items-center"
           >
             {resendLoading ? (
               <>

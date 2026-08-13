@@ -209,7 +209,7 @@ export default function RegisterPage() {
             <button 
               type="submit" 
               disabled={isChecking}
-              className="bg-[#71b600] hover:bg-[#609a00] disabled:bg-[#92b55b] disabled:cursor-not-allowed text-white font-black text-[11px] uppercase tracking-widest py-3 px-20 rounded-full transition-all active:scale-95 shadow-md flex items-center justify-center min-w-[220px]"
+              className="bg-[#5e9900] hover:bg-[#4d7e00] disabled:bg-[#92b55b] disabled:cursor-not-allowed text-white font-black text-[11px] uppercase tracking-widest py-3 px-20 rounded-full transition-all active:scale-95 shadow-md flex items-center justify-center min-w-[220px]"
             >
               {isChecking ? (
                 <>
@@ -224,7 +224,7 @@ export default function RegisterPage() {
         </form>
 
         <p className="mt-6 text-slate-500 text-sm relative z-10">
-          Already have an account? <Link href="/auth/login" className="text-[#71b600] font-bold hover:underline">Login</Link>
+          Already have an account? <Link href="/auth/login" className="text-[#5e9900] font-bold hover:underline">Login</Link>
         </p>
       </main>
 
@@ -239,7 +239,7 @@ export default function RegisterPage() {
             <div className="p-3 border-b border-gray-100 bg-gray-50/50">
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-[#71b600] transition-colors" />
+                <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-[#5e9900] transition-colors" />
               </div>
             </div>
             <div className="overflow-y-auto p-2 flex-grow">

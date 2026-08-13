@@ -178,7 +178,7 @@ export default function LoginPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="group flex items-center justify-center gap-2 bg-[#71b600] hover:bg-[#609a00] text-white font-black text-[11px] uppercase tracking-wider py-4 px-12 rounded-full transition-all shadow-md active:scale-95 disabled:opacity-70 min-w-[200px]"
+              className="group flex items-center justify-center gap-2 bg-[#5e9900] hover:bg-[#4d7e00] text-white font-black text-[11px] uppercase tracking-wider py-4 px-12 rounded-full transition-all shadow-md active:scale-95 disabled:opacity-70 min-w-[200px]"
             >
               {loading ? (
                 <>
@@ -199,7 +199,7 @@ export default function LoginPage() {
         {message && (
           <div className={`mt-5 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-center text-[11px] font-bold max-w-xs transition-all duration-300 ${
             messageType === "success"
-              ? "bg-[#EEF6DF] text-[#65A30D] border border-[#65A30D]/30"
+              ? "bg-[#EEF6DF] text-[#5e9900] border border-[#5e9900]/30"
               : "bg-red-50 text-red-600 border border-red-200"
           }`}>
             {messageType === "error" && <XCircle size={14} className="text-red-500 shrink-0" />}
@@ -209,7 +209,7 @@ export default function LoginPage() {
 
         <p className="mt-8 text-slate-500 text-xs font-medium relative z-10">
           New to MRTB?{' '}
-          <Link href="/auth/register" className="text-[#066936] font-bold hover:underline">
+          <Link href="/auth/register" className="text-[#5e9900] font-bold hover:underline">
             Create an Account
           </Link>
         </p>

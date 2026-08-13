@@ -6,8 +6,8 @@ import Header from "@/app/components/Header";
 export default function HeaderWrapper() {
   const pathname = usePathname();
 
-  // ONLY render the header if the path is exactly "/"
-  if (pathname !== "/") return null;
+  // Render header on "/", "/about", and "/mandate"
+  if (pathname !== "/" && pathname !== "/about" && pathname !== "/mandate") return null;
 
   return <Header />;
 }

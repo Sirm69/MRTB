@@ -1,3 +1,11 @@
 git add .
-git commit -m "User dashboard error fixed"
+git commit -m "August Version"
+git push
+
+
+
+git config --global http.version HTTP/1.1
+git config --global http.lowSpeedLimit 1000
+git config --global http.lowSpeedTime 600
+
 git push
