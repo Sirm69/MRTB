@@ -10,6 +10,10 @@ RUN npm ci
 # Copy the rest of the application source
 COPY . .
 
+# Declare and expose the build-time API base URL so Next.js can inline it
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
 # Build the Next.js application
 RUN npm run build
 
@@ -27,14 +31,8 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
 
-# If you have a next.config.js with 'output: "standalone"', you can copy the standalone folder instead:
-# COPY --from=builder /app/.next/standalone ./
-# COPY --from=builder /app/.next/static ./.next/static
-
-# Expose the port (Azure App Service will set the actual PORT env variable)
 EXPOSE 3000
 
 ENV NODE_ENV=production
 
-# Start Next.js, listening on the port provided by Azure (or default to 3000)
 CMD ["npm", "start"]
