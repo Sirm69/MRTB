@@ -2,9 +2,9 @@ import React from 'react';
 import { User, Stethoscope, FileText, XCircle } from 'lucide-react';
 import { FormRow, safeParseArray } from './FormSharedComponents';
 
-export const PrimaryPractitionersSection = ({ staff }: { staff: any[] }) => {
+export const PrimaryPractitionersSection = ({ staff, assessmentType }: { staff: any[]; assessmentType?: string }) => {
   const primary = staff?.filter((s) => s.type !== 'support_staff') || [];
-  const isAcademic = primary.some(p => p.type === 'lecturer');
+  const isAcademic = assessmentType?.includes('academic') || primary.some(p => p.type === 'lecturer');
 
   return (
     <section>
@@ -14,16 +14,29 @@ export const PrimaryPractitionersSection = ({ staff }: { staff: any[] }) => {
       <div className="flex flex-col gap-6">
         {primary.map((p, i) => {
           const quals = safeParseArray(p.qualifications);
-          const cpds = safeParseArray(p.cpds);
-          const journals = safeParseArray(p.journals);
-          const papers = safeParseArray(p.papers);
-          const pgCerts = safeParseArray(p.pgCerts);
+          const qualsString = quals.length > 0 
+            ? quals.map((q: any) => `${q.title || q}${q.date ? ` (${q.date})` : ''}`).filter(Boolean).join(', ') 
+            : (p.qualification || '-');
 
-          const qualsString = quals.length > 0 ? quals.map((q: any) => `${q.title} ${q.date ? `(${q.date})` : ''}`).join(', ') : '-';
-          const cpdsString = cpds.length > 0 ? cpds.map((c: any) => c.title).join(', ') : '-';
-          const journalsString = journals.length > 0 ? journals.map((j: any) => j.title).join(', ') : '-';
-          const papersString = papers.length > 0 ? papers.map((pa: any) => pa.title).join(', ') : '-';
-          const pgCertsString = pgCerts.length > 0 ? pgCerts.map((pg: any) => `${pg.title} ${pg.date ? `(${pg.date})` : ''}`).join(', ') : '-';
+          const cpds = safeParseArray(p.cpds);
+          const cpdsString = cpds.length > 0 
+            ? cpds.map((c: any) => c.title || c).filter(Boolean).join(', ') 
+            : (typeof p.cpds === 'string' ? p.cpds : '');
+
+          const pgCerts = safeParseArray(p.pgCerts);
+          const pgCertsString = pgCerts.length > 0 
+            ? pgCerts.map((pg: any) => `${pg.title || pg}${pg.date ? ` (${pg.date})` : ''}`).filter(Boolean).join(', ') 
+            : (typeof p.pgCerts === 'string' ? p.pgCerts : '');
+
+          const papers = safeParseArray(p.papers);
+          const papersString = papers.length > 0 
+            ? papers.map((pa: any) => pa.title || pa).filter(Boolean).join(', ') 
+            : (typeof p.papers === 'string' ? p.papers : '');
+
+          const journals = safeParseArray(p.journals);
+          const journalsString = journals.length > 0 
+            ? journals.map((j: any) => j.title || j).filter(Boolean).join(', ') 
+            : (typeof p.journals === 'string' ? p.journals : '');
           
           return (
             <div key={i} className="w-full border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
@@ -36,43 +49,46 @@ export const PrimaryPractitionersSection = ({ staff }: { staff: any[] }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-1 mb-2">
                   <FormRow label="Full Name" value={p.name} />
                   <FormRow label="Gender" value={p.gender} />
-                  <FormRow label="Designation" value={p.designation} />
-                  <FormRow label="License No." value={p.license} />
-                  <FormRow label="Appt. Date" value={p.dateAppt} />
-                  <FormRow label="Appt. Nature" value={p.natureAppt} />
-                  <FormRow label="Specialization" value={p.specialization || '-'} />
+                  {p.designation && <FormRow label="Designation" value={p.designation} />}
+                  {p.license && <FormRow label="MRTB License No." value={p.license} />}
+                  {p.dateAppt && <FormRow label="Date of First Appt." value={p.dateAppt} />}
+                  {p.natureAppt && <FormRow label="Nature of Appt." value={p.natureAppt} />}
+                  {p.specialization && <FormRow label="Areas of Specialization" value={p.specialization} />}
                   <FormRow label="Qualifications" value={qualsString} />
                   
-                  {isAcademic ? (
-                    <>
-                      <div className="col-span-1 md:col-span-2">
-                        <FormRow label="Post-graduate Certs" value={pgCertsString} />
-                      </div>
-                      <div className="col-span-1 md:col-span-2">
-                        <FormRow label="Papers Presented" value={papersString} />
-                      </div>
-                      <div className="col-span-1 md:col-span-2">
-                        <FormRow label="Journals Attended" value={journalsString} />
-                      </div>
-                    </>
-                  ) : (
+                  {cpdsString ? (
                     <div className="col-span-1 md:col-span-2">
-                      <FormRow label="CPD Programmes" value={cpdsString} />
+                      <FormRow label={isAcademic ? "Paper Presented / CPD Attended" : "CPD Programmes"} value={cpdsString} />
                     </div>
-                  )}
+                  ) : null}
+
+                  {pgCertsString ? (
+                    <div className="col-span-1 md:col-span-2">
+                      <FormRow label="Post-graduate Certs" value={pgCertsString} />
+                    </div>
+                  ) : null}
+
+                  {papersString ? (
+                    <div className="col-span-1 md:col-span-2">
+                      <FormRow label="Papers Presented" value={papersString} />
+                    </div>
+                  ) : null}
+
+                  {journalsString ? (
+                    <div className="col-span-1 md:col-span-2">
+                      <FormRow label="Journals Attended" value={journalsString} />
+                    </div>
+                  ) : null}
                 </div>
-                <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
-                  <span className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Proof of License / Cert</span>
-                  {p.trainingFileName ? (
+
+                {p.trainingFileName ? (
+                  <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
+                    <span className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Proof of License / Document</span>
                     <button className="flex items-center gap-1.5 bg-[#EEF6DF] text-[#066936] px-4 py-2 rounded-lg text-[12px] font-bold hover:bg-[#dcedc1] transition-colors border border-[#CDE1B4]/50">
-                      <FileText size={14} /> View Document
+                      <FileText size={14} /> View Document ({p.trainingFileName})
                     </button>
-                  ) : (
-                    <span className="flex items-center gap-1.5 bg-gray-50 text-gray-400 border border-gray-100 px-4 py-2 rounded-lg text-[12px] font-medium">
-                      <XCircle size={14} /> Not Uploaded
-                    </span>
-                  )}
-                </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           );
@@ -83,7 +99,7 @@ export const PrimaryPractitionersSection = ({ staff }: { staff: any[] }) => {
   );
 };
 
-export const SupportStaffSection = ({ staff }: { staff: any[] }) => {
+export const SupportStaffSection = ({ staff, assessmentType }: { staff: any[]; assessmentType?: string }) => {
   const support = staff?.filter((s) => s.type === 'support_staff') || [];
   return (
     <section>
@@ -93,7 +109,9 @@ export const SupportStaffSection = ({ staff }: { staff: any[] }) => {
       <div className="flex flex-col gap-6">
         {support.map((s, i) => {
           const quals = safeParseArray(s.qualifications);
-          const qualsString = quals.length > 0 ? quals.map((q: any) => q.title).join(', ') : '-';
+          const qualsString = quals.length > 0 
+            ? quals.map((q: any) => `${q.title || q}${q.date ? ` (${q.date})` : ''}`).filter(Boolean).join(', ') 
+            : (s.qualification || '-');
 
           return (
             <div key={i} className="w-full border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
@@ -104,20 +122,23 @@ export const SupportStaffSection = ({ staff }: { staff: any[] }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-1 mb-4">
                   <FormRow label="Full Name" value={s.name} />
                   <FormRow label="Gender" value={s.gender} />
-                  <FormRow label="Rank" value={s.rank} />
+                  {s.rank && <FormRow label="Present Rank/Cadre" value={s.rank} />}
+                  {s.designation && <FormRow label="Designation" value={s.designation} />}
                   <FormRow label="Qualifications" value={qualsString} />
                 </div>
-                <div className="mt-2 mb-4">
-                  <span className="text-gray-500 font-medium text-[12px] block mb-2">Job Description:</span>
-                  <div className="text-gray-900 font-medium text-[13px] bg-slate-50 p-4 rounded-xl border border-gray-100 italic w-full">
-                    {s.jobDescription || 'No description provided.'}
+                {s.jobDescription && (
+                  <div className="mt-2 mb-4">
+                    <span className="text-gray-500 font-medium text-[12px] block mb-2">Job Description:</span>
+                    <div className="text-gray-900 font-medium text-[13px] bg-slate-50 p-4 rounded-xl border border-gray-100 italic w-full">
+                      {s.jobDescription}
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="mt-2 flex items-center justify-between border-t border-gray-100 pt-4">
-                  <span className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Certificate</span>
+                  <span className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Evidence of Continuous Training</span>
                   {s.trainingFileName ? (
                     <button className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-[12px] font-bold hover:bg-blue-100 transition-colors border border-blue-200">
-                      <FileText size={14} /> View Certificate
+                      <FileText size={14} /> View Document ({s.trainingFileName})
                     </button>
                   ) : (
                     <span className="flex items-center gap-1.5 bg-gray-50 text-gray-400 border border-gray-100 px-4 py-2 rounded-lg text-[12px] font-medium">

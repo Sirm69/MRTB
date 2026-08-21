@@ -1,8 +1,20 @@
 "use client";
 
 import React from "react";
+import { 
+  CheckCircle2, 
+  Clock, 
+  XCircle, 
+  FileText, 
+  CreditCard, 
+  Calendar, 
+  Award, 
+  User, 
+  ClipboardCheck, 
+  ShieldCheck,
+  ListChecks
+} from "lucide-react";
 
-// 1. Define the shape of your data for TypeScript
 export interface Activity {
   id: string | number;
   action: string;
@@ -15,7 +27,6 @@ interface ActivitiesBoxProps {
   activities?: Activity[];
 }
 
-// 2. Default mock data (matches your original design)
 const defaultActivities: Activity[] = [
   { id: 1, action: "Account Creation", category: "Audiology Clinic", date: "July 31, 2025", status: "Successful" },
   { id: 2, action: "Pre-assessment form Submitted", category: "-", date: "-", status: "-" },
@@ -27,7 +38,6 @@ const defaultActivities: Activity[] = [
 ];
 
 export default function ActivitiesBox({ activities = defaultActivities }: ActivitiesBoxProps) {
-  // Helper to determine step workflow order
   const getStepOrder = (action: string): number => {
     const lower = action.toLowerCase();
     if (lower.includes("accreditation decision")) return 7;
@@ -40,13 +50,24 @@ export default function ActivitiesBox({ activities = defaultActivities }: Activi
     return 0;
   };
 
-  // Helper to determine if an activity is active/completed
+  const getStepIcon = (action: string, isDone: boolean) => {
+    const lower = action.toLowerCase();
+    const size = 14;
+    const iconColor = isDone ? "text-[#5D9C0E]" : "text-gray-300";
+
+    if (lower.includes("accreditation decision")) return <Award size={size} className={iconColor} />;
+    if (lower.includes("visitation exercise")) return <ShieldCheck size={size} className={iconColor} />;
+    if (lower.includes("visitation date accepted") || lower.includes("visitation")) return <Calendar size={size} className={iconColor} />;
+    if (lower.includes("assessment form") || lower.includes("assessment")) return <ClipboardCheck size={size} className={iconColor} />;
+    if (lower.includes("payment")) return <CreditCard size={size} className={iconColor} />;
+    if (lower.includes("pre-assessment")) return <FileText size={size} className={iconColor} />;
+    return <User size={size} className={iconColor} />;
+  };
+
   const isActive = (status: string, date: string): boolean => {
     return status !== "-" && date !== "-";
   };
 
-  // Sort activities: active/completed items first (sorted descending/newest first),
-  // then pending/placeholder items at the bottom (sorted ascending/workflow sequence).
   const sortedActivities = [...activities].sort((a, b) => {
     const aActive = isActive(a.status, a.date);
     const bActive = isActive(b.status, b.date);
@@ -55,48 +76,150 @@ export default function ActivitiesBox({ activities = defaultActivities }: Activi
     if (!aActive && bActive) return 1;
 
     if (aActive && bActive) {
-      // Both active: descending step order (latest step/operation first)
       return getStepOrder(b.action) - getStepOrder(a.action);
     }
-
-    // Both inactive: ascending step order (logical workflow progression)
     return getStepOrder(a.action) - getStepOrder(b.action);
   });
 
-  return (
-    <div className="bg-white rounded-[24px] p-5 md:p-6 shadow-sm border border-gray-100 w-full overflow-hidden">
-      <h3 className="w-full border-b-[2px] border-gray-200 pb-4 mb-5 font-bold text-gray-800 text-[15px]">
-        Activities:
-      </h3>
-      <div className="w-full overflow-x-auto pb-1">
-        <div className="flex flex-col text-[13px] md:text-[12.5px] min-w-[600px] whitespace-nowrap">
-          
-          {/* Map through the sorted data array */}
-          {sortedActivities.map((activity, index) => {
-            const isLast = index === sortedActivities.length - 1;
-            
-            // Check if this row is a placeholder by checking if the date or status is a "-"
-            const isPlaceholder = activity.date === "-" || activity.status === "-";
+  const completedCount = activities.filter(a => isActive(a.status, a.date)).length;
 
+  const renderStatusBadge = (status: string, isDone: boolean) => {
+    const s = status.toLowerCase();
+    if (!isDone || status === "-") {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-normal bg-gray-50 text-gray-400">
+          Pending
+        </span>
+      );
+    }
+    if (s.includes("success") || s.includes("grant") || s.includes("paid") || s.includes("approv")) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#EEF6DF] text-[#066936]">
+          <CheckCircle2 size={11} className="text-[#5D9C0E]" /> {status}
+        </span>
+      );
+    }
+    if (s.includes("reject")) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-red-50 text-red-600">
+          <XCircle size={11} className="text-red-500" /> {status}
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700">
+        <Clock size={11} className="text-amber-500" /> {status}
+      </span>
+    );
+  };
+
+  return (
+    <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-5 border border-gray-100 w-full overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2.5 mb-1.5 border-b border-gray-100">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-[#F8FCF5] flex items-center justify-center text-[#5D9C0E]">
+            <ListChecks size={14} />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 text-sm md:text-[14.5px] leading-tight">
+              Application Activities
+            </h3>
+            <p className="text-[10.5px] text-gray-400 font-normal">Timeline & status tracking</p>
+          </div>
+        </div>
+
+        <span className="text-[10.5px] font-medium text-[#066936] bg-[#EEF6DF] px-2.5 py-0.5 rounded-full">
+          {completedCount} of {activities.length} Completed
+        </span>
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block w-full">
+        <div className="grid grid-cols-12 gap-3 py-1.5 text-[10.5px] font-medium text-gray-400 border-b border-gray-100">
+          <div className="col-span-5 pl-1.5">Activity</div>
+          <div className="col-span-3">Details / Reference</div>
+          <div className="col-span-2">Date</div>
+          <div className="col-span-2 text-right pr-1.5">Status</div>
+        </div>
+
+        <div className="divide-y divide-gray-50 text-[12px]">
+          {sortedActivities.map((activity) => {
+            const isDone = isActive(activity.status, activity.date);
             return (
               <div
                 key={activity.id}
-                className={`grid grid-cols-4 gap-4 ${
-                  isLast ? "pt-3.5" : "py-3.5 border-b border-gray-100"
-                } ${
-                  // Apply faded color ONLY if it's a placeholder, otherwise use solid text
-                  isPlaceholder ? "text-[#d1d5db]" : "text-gray-700 font-medium"
+                className={`grid grid-cols-12 gap-3 py-1.5 items-center transition-colors rounded-lg px-1.5 ${
+                  isDone ? "hover:bg-gray-50/70 text-gray-800" : "text-gray-400 opacity-50"
                 }`}
               >
-                <div>{activity.action}</div>
-                <div>{activity.category}</div>
-                <div>{activity.date}</div>
-                <div className="text-right pr-2">{activity.status}</div>
+                <div className="col-span-5 flex items-center gap-2.5">
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${
+                    isDone ? "bg-[#F8FCF5]" : "bg-gray-50"
+                  }`}>
+                    {getStepIcon(activity.action, isDone)}
+                  </div>
+                  <span className={`font-normal truncate ${isDone ? "text-gray-800" : "text-gray-400"}`}>
+                    {activity.action}
+                  </span>
+                </div>
+
+                <div className="col-span-3 truncate text-gray-500 font-normal text-[11.5px]">
+                  {activity.category !== "-" ? activity.category : "—"}
+                </div>
+
+                <div className="col-span-2 text-gray-500 font-normal text-[11px]">
+                  {activity.date !== "-" ? activity.date : "—"}
+                </div>
+
+                <div className="col-span-2 text-right pr-1">
+                  {renderStatusBadge(activity.status, isDone)}
+                </div>
               </div>
             );
           })}
-          
         </div>
+      </div>
+
+      {/* Mobile Card / Feed View */}
+      <div className="md:hidden flex flex-col divide-y divide-gray-100">
+        {sortedActivities.map((activity) => {
+          const isDone = isActive(activity.status, activity.date);
+          return (
+            <div
+              key={activity.id}
+              className={`py-2 flex items-start justify-between gap-2.5 ${
+                isDone ? "opacity-100" : "opacity-50"
+              }`}
+            >
+              <div className="flex items-start gap-2 min-w-0">
+                <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${
+                  isDone ? "bg-[#F8FCF5]" : "bg-gray-50"
+                }`}>
+                  {getStepIcon(activity.action, isDone)}
+                </div>
+                <div className="min-w-0">
+                  <p className={`text-[11.5px] font-medium leading-tight truncate ${
+                    isDone ? "text-gray-900" : "text-gray-500"
+                  }`}>
+                    {activity.action}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-gray-400">
+                    {activity.category !== "-" && (
+                      <span className="truncate max-w-[120px]">{activity.category}</span>
+                    )}
+                    {activity.category !== "-" && activity.date !== "-" && <span>•</span>}
+                    {activity.date !== "-" && <span>{activity.date}</span>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="shrink-0 pt-0.5">
+                {renderStatusBadge(activity.status, isDone)}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

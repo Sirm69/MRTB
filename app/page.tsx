@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import InstitutionProfileCard, { InstitutionProfile } from '@/app/components/InstitutionProfileCard';
 import {
   BadgeCheck,
   Check,
@@ -19,7 +20,10 @@ import {
   ShieldCheck,
   Globe,
   Award,
-  Search
+  Search,
+  Loader2,
+  X,
+  AlertCircle
 } from 'lucide-react';
 import Hero from '@/app/components/Banner';
 import Footer from '@/app/components/Footer';
@@ -28,6 +32,63 @@ export default function Home() {
   // Brand Color Palette (Mandatory)
   const deeperGreen = "#5D9C0E";
   const overColor = "#1b1e15";
+
+  // Section 3 Search State
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [category, setCategory] = React.useState('');
+  const [state, setState] = React.useState('');
+  const [isSearching, setIsSearching] = React.useState(false);
+  const [hasSearched, setHasSearched] = React.useState(false);
+  const [searchResults, setSearchResults] = React.useState<InstitutionProfile[]>([]);
+  const [searchError, setSearchError] = React.useState('');
+
+  const handleInlineSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSearching(true);
+    setSearchError('');
+    setHasSearched(true);
+
+    try {
+      const params = new URLSearchParams();
+      if (searchQuery.trim()) params.append('query', searchQuery.trim());
+      if (category.trim()) params.append('category', category.trim());
+      if (state.trim()) params.append('state', state.trim());
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/public/verify?${params.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          }
+        }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        setSearchResults(data.results || []);
+      } else {
+        setSearchError('Could not retrieve verification records. Please try again.');
+        setSearchResults([]);
+      }
+    } catch (err) {
+      console.error("Home search error:", err);
+      setSearchError('Network error connecting to verification database.');
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setCategory('');
+    setState('');
+    setHasSearched(false);
+    setSearchResults([]);
+    setSearchError('');
+  };
 
   // Natural Smooth Fluid Motion Variants
   const fadeInUp = {
@@ -49,6 +110,7 @@ export default function Home() {
       window.scrollTo(0, 0);
     }
   }, []);
+
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
@@ -260,16 +322,28 @@ export default function Home() {
           whileInView={fadeInUp.whileInView}
           viewport={fadeInUp.viewport}
           transition={fadeInUp.transition}
-          className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl hover:border-[#5e9900]/30 transition-all duration-500 ease-out overflow-hidden"
+          className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:border-[#5e9900]/30 transition-all duration-500 ease-out overflow-hidden"
         >
-          <div className="p-6 sm:p-8 space-y-6">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                Verify Accreditation Status
-              </h2>
-              <p className="text-slate-600 text-xs sm:text-sm mt-1">
-                Search the official MRTB database to verify clinics, hospitals, and training institutions.
-              </p>
+          <form onSubmit={handleInlineSearch} className="p-6 sm:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  Verify Accreditation Status
+                </h2>
+                <p className="text-slate-600 text-xs sm:text-sm mt-1">
+                  Search the official MRTB database to verify clinics, hospitals, and training institutions.
+                </p>
+              </div>
+
+              {hasSearched && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 font-semibold border border-slate-200 bg-white px-3 py-1.5 rounded-full transition-colors cursor-pointer w-fit"
+                >
+                  <X size={13} /> Clear Results
+                </button>
+              )}
             </div>
 
             {/* Search Input Controls */}
@@ -279,6 +353,8 @@ export default function Home() {
                 <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Institution Name or Accreditation No."
                   className="w-full pl-10 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#5e9900] focus:ring-2 focus:ring-[#EEF6DF] transition-all"
                 />
@@ -286,11 +362,16 @@ export default function Home() {
 
               {/* All Categories Dropdown */}
               <div className="md:col-span-3">
-                <select className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:border-[#5e9900] focus:ring-2 focus:ring-[#EEF6DF] transition-all cursor-pointer">
+                <select 
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:border-[#5e9900] focus:ring-2 focus:ring-[#EEF6DF] transition-all cursor-pointer"
+                >
                   <option value="">All Categories</option>
                   <option value="physiotherapy">Physiotherapy Center</option>
                   <option value="occupational">Occupational Therapy</option>
                   <option value="speech">Speech Therapy</option>
+                  <option value="audiology">Audiology</option>
                   <option value="prosthetics">Prosthetics & Orthotics</option>
                   <option value="chiropractic">Chiropractic & Osteopathy</option>
                 </select>
@@ -298,43 +379,101 @@ export default function Home() {
 
               {/* All States Dropdown */}
               <div className="md:col-span-2">
-                <select className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:border-[#5e9900] focus:ring-2 focus:ring-[#EEF6DF] transition-all cursor-pointer">
+                <select 
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:border-[#5e9900] focus:ring-2 focus:ring-[#EEF6DF] transition-all cursor-pointer"
+                >
                   <option value="">All States</option>
-                  <option value="abuja">Abuja (FCT)</option>
-                  <option value="lagos">Lagos</option>
-                  <option value="kano">Kano</option>
-                  <option value="rivers">Rivers</option>
-                  <option value="oyo">Oyo</option>
-                  <option value="enugu">Enugu</option>
-                  <option value="kaduna">Kaduna</option>
+                  <option value="Abuja">Abuja (FCT)</option>
+                  <option value="Lagos">Lagos</option>
+                  <option value="Kano">Kano</option>
+                  <option value="Rivers">Rivers</option>
+                  <option value="Oyo">Oyo</option>
+                  <option value="Enugu">Enugu</option>
+                  <option value="Kaduna">Kaduna</option>
+                  <option value="Edo">Edo</option>
+                  <option value="Delta">Delta</option>
+                  <option value="Ogun">Ogun</option>
                 </select>
               </div>
 
               {/* Search Button */}
               <div className="md:col-span-2">
                 <button
-                  onClick={() => window.dispatchEvent(new CustomEvent('open-verify-modal'))}
-                  className="w-full bg-[#5e9900] hover:brightness-105 active:scale-[0.99] text-white font-bold text-xs sm:text-sm py-3 px-5 rounded-full shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  type="submit"
+                  disabled={isSearching}
+                  className="w-full bg-[#5e9900] hover:brightness-105 active:scale-[0.99] text-white font-bold text-xs sm:text-sm py-3 px-5 rounded-full shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
                 >
-                  <Search size={16} />
-                  <span>Search</span>
+                  {isSearching ? (
+                    <><Loader2 size={16} className="animate-spin" /> Searching...</>
+                  ) : (
+                    <><Search size={16} /> Search</>
+                  )}
                 </button>
               </div>
             </div>
 
+            {/* In-Line Search Results Container */}
+            {isSearching && (
+              <div className="py-10 flex flex-col items-center justify-center space-y-2 text-slate-400">
+                <Loader2 size={30} className="animate-spin text-[#5e9900]" />
+                <p className="text-xs font-medium">Verifying public accreditation records...</p>
+              </div>
+            )}
+
+            {searchError && (
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl text-xs flex items-center gap-2">
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{searchError}</span>
+              </div>
+            )}
+
+            {!isSearching && hasSearched && searchResults.length === 0 && !searchError && (
+              <div className="bg-slate-50 rounded-2xl p-8 border border-slate-200 text-center space-y-2 max-w-md mx-auto my-4">
+                <Building2 size={36} className="text-slate-300 mx-auto" />
+                <h4 className="text-sm font-bold text-slate-800">No Matching Institutions Found</h4>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  We could not find any active accreditation records matching your search query. Please verify the name or search by State / Category.
+                </p>
+              </div>
+            )}
+
+            {!isSearching && searchResults.length > 0 && (
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between text-xs text-slate-500 border-b border-slate-100 pb-2">
+                  <span className="font-semibold text-slate-700">
+                    Found {searchResults.length} Verified Institution Profile{searchResults.length > 1 ? 's' : ''}:
+                  </span>
+                  <span className="text-[11px] text-[#066936] font-bold bg-[#EEF6DF] px-2.5 py-0.5 rounded-full border border-[#CDE1B4]">
+                    Statutory Registry Verified
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {searchResults.map((inst, index) => (
+                    <InstitutionProfileCard key={inst.id || index} institution={inst} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="text-right text-[11px] text-slate-400 font-medium pt-1">
               Last database update: Today
             </div>
-          </div>
+          </form>
 
           {/* Bottom Brand Action Bar */}
           <div
-            onClick={() => window.dispatchEvent(new CustomEvent('open-verify-modal'))}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-verify-modal', {
+              detail: { query: searchQuery, category, state }
+            }))}
             className="bg-[#5e9900] hover:brightness-105 py-3.5 px-6 text-center text-white text-sm font-bold tracking-wide flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
-            <span>Search Verified Portal Database</span>
+            <span>Open Dedicated Verification Modal</span>
           </div>
         </motion.section>
+
 
       </main>
 

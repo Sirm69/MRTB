@@ -72,8 +72,9 @@ export default function FieldTeamInspections() {
   };
 
   // Helper to determine if status is pending vs completed
+  // Completed means the accreditation result has been submitted to the admins
   const isCompleted = (status: string) => {
-    return ['finalized', 'forwarded', 'rejected', 'approved'].includes(status);
+    return ['finalized', 'forwarded', 'rejected'].includes(status);
   };
 
   // Filtered List calculation

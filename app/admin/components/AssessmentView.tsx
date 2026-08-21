@@ -48,10 +48,10 @@ export default function FullAssessmentView({ drawerData, onBack }: FullAssessmen
       
       <div className="space-y-8 max-w-5xl mx-auto pb-10">
         {/* Practitioner Sub-section Component Split */}
-        <PrimaryPractitionersSection staff={data.staff} />
+        <PrimaryPractitionersSection staff={data.staff} assessmentType={data.assessment_type} />
 
         {/* Support Staff Sub-section Component Split */}
-        <SupportStaffSection staff={data.staff} />
+        <SupportStaffSection staff={data.staff} assessmentType={data.assessment_type} />
 
         {/* Space Evaluator Table Component Split */}
         <section>

@@ -4,10 +4,9 @@ import React, { useState, useRef, useEffect, Suspense } from "react";
 import { 
   Send, 
   User, 
-  MessageSquare,
-  Search,
-  CheckCheck,
-  ShieldCheck
+  Search, 
+  CheckCheck, 
+  ShieldCheck 
 } from "lucide-react";
 import { useUser } from "../layout";
 
@@ -96,7 +95,7 @@ function MessagesContent() {
         id: Date.now() + 1,
         sender: activeThreadId === "admin" ? "admin" : "inspector",
         text: activeThreadId === "admin" 
-          ? `Thank you for contacting MRTB support, ${userData?.name || "Facility Director"}. We have received your query regarding the application and are evaluating it. An officer will update you shortly.`
+          ? `Thank you for contacting MRTB support, ${userData?.name || "Facility Director"}. We have received your query and will update you shortly.`
           : "Thank you for the update. We have logged this request. Please continue with preparation in accordance with guidelines.",
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
@@ -112,25 +111,25 @@ function MessagesContent() {
   };
 
   return (
-    <>
+    <div className="space-y-6 max-w-7xl mx-auto w-full pb-10">
       {/* Title Header */}
-      <div className="mb-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">Support Messages</h1>
-        <p className="text-sm text-gray-500">Discuss compliance details, ask registration questions, or contact inspectors</p>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 tracking-tight">Support Messages</h1>
+        <p className="text-xs text-gray-400 font-normal mt-0.5">Discuss compliance details, ask registration questions, or contact inspectors</p>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex h-[65vh] w-full">
+      <div className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 overflow-hidden flex h-[65vh] w-full">
         
         {/* Left Side: Threads Panel */}
-        <div className="w-full sm:w-[320px] border-r border-gray-100 flex flex-col shrink-0">
-          <div className="p-4 border-b border-gray-100">
+        <div className="w-full sm:w-[300px] border-r border-gray-100 flex flex-col shrink-0">
+          <div className="p-3.5 border-b border-gray-100">
             <div className="relative">
               <input 
                 type="text" 
                 placeholder="Search threads..."
-                className="w-full bg-gray-50 text-xs rounded-xl pl-9 pr-4 py-2 border border-gray-150 focus:outline-none focus:border-[#5D9C0E]"
+                className="w-full bg-gray-50 text-xs rounded-xl pl-8 pr-3 py-2 border border-gray-150 focus:outline-none focus:border-[#5D9C0E] font-normal"
               />
-              <Search className="absolute left-3 top-2.5 text-gray-400" size={14} />
+              <Search className="absolute left-2.5 top-2.5 text-gray-400" size={13} />
             </div>
           </div>
 
@@ -143,20 +142,20 @@ function MessagesContent() {
                 <button
                   key={thread.id}
                   onClick={() => setActiveThreadId(thread.id)}
-                  className={`w-full p-4 flex gap-3 text-left transition-colors items-start ${
-                    isSelected ? "bg-[#FAFCF8]" : "hover:bg-gray-50"
+                  className={`w-full p-3.5 flex gap-3 text-left transition-colors items-start ${
+                    isSelected ? "bg-[#FAFCF8]" : "hover:bg-gray-50/70"
                   }`}
                 >
-                  <div className={`${thread.avatarBg} text-white rounded-full p-2.5 shrink-0 flex items-center justify-center`}>
-                    <User size={18} />
+                  <div className={`${thread.avatarBg} text-white rounded-xl p-2 shrink-0 flex items-center justify-center`}>
+                    <User size={16} />
                   </div>
                   <div className="leading-tight flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-0.5">
-                      <p className="font-bold text-gray-800 text-xs truncate">{thread.name}</p>
-                      <span className="text-[9px] text-gray-400">{lastMsg ? lastMsg.time : ""}</span>
+                      <p className="font-medium text-gray-800 text-xs truncate">{thread.name}</p>
+                      <span className="text-[9px] text-gray-400 font-normal">{lastMsg ? lastMsg.time : ""}</span>
                     </div>
-                    <p className="text-[10px] text-[#5D9C0E] font-semibold mb-1">{thread.role}</p>
-                    <p className="text-[11px] text-gray-400 truncate leading-snug">
+                    <p className="text-[10px] text-[#5D9C0E] font-normal mb-1">{thread.role}</p>
+                    <p className="text-[11px] text-gray-400 truncate leading-snug font-normal">
                       {lastMsg ? lastMsg.text : "No messages."}
                     </p>
                   </div>
@@ -167,39 +166,39 @@ function MessagesContent() {
         </div>
 
         {/* Right Side: Message Window */}
-        <div className="flex-1 flex flex-col bg-gray-50 relative">
+        <div className="flex-1 flex flex-col bg-gray-50/50 relative">
           
           {/* Active Thread Header */}
-          <div className="bg-white p-4 border-b border-gray-100 flex justify-between items-center shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className={`${activeThread.avatarBg} text-white rounded-full p-2.5 shrink-0`}>
-                <User size={18} />
+          <div className="bg-white p-3.5 border-b border-gray-100 flex justify-between items-center">
+            <div className="flex items-center gap-2.5">
+              <div className={`${activeThread.avatarBg} text-white rounded-xl p-2 shrink-0`}>
+                <User size={16} />
               </div>
               <div className="leading-tight">
-                <h4 className="font-bold text-gray-800 text-xs flex items-center gap-1.5">
+                <h4 className="font-semibold text-gray-800 text-xs flex items-center gap-1.5">
                   {activeThread.name} 
-                  <ShieldCheck size={14} className="text-[#5D9C0E]" />
+                  <ShieldCheck size={13} className="text-[#5D9C0E]" />
                 </h4>
-                <p className="text-[10px] text-gray-400 font-medium">{activeThread.role}</p>
+                <p className="text-[10px] text-gray-400 font-normal">{activeThread.role}</p>
               </div>
             </div>
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4">
+          <div className="flex-1 p-4 overflow-y-auto space-y-3.5">
             {activeThread.messages.map((msg) => {
               const isMe = msg.sender === "user";
               return (
                 <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-xs shadow-sm leading-relaxed ${
+                  <div className={`max-w-[70%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
                     isMe 
                       ? "bg-[#5D9C0E] text-white rounded-tr-none" 
-                      : "bg-white text-gray-800 rounded-tl-none border border-gray-150"
+                      : "bg-white text-gray-800 rounded-tl-none border border-gray-100"
                   }`}>
-                    <p>{msg.text}</p>
-                    <div className={`text-[9px] mt-1 flex justify-end items-center gap-1 ${isMe ? "text-[#DFEAD9]" : "text-gray-400"}`}>
+                    <p className="font-normal">{msg.text}</p>
+                    <div className={`text-[9px] mt-1 flex justify-end items-center gap-1 ${isMe ? "text-white/70" : "text-gray-400"}`}>
                       <span>{msg.time}</span>
-                      {isMe && <CheckCheck size={12} />}
+                      {isMe && <CheckCheck size={11} />}
                     </div>
                   </div>
                 </div>
@@ -209,7 +208,7 @@ function MessagesContent() {
             {/* Simulating typing loader */}
             {isTypingSim && (
               <div className="flex justify-start">
-                <div className="bg-white rounded-2xl rounded-tl-none px-4 py-3 border border-gray-150 shadow-sm flex items-center gap-1">
+                <div className="bg-white rounded-2xl rounded-tl-none px-3.5 py-2.5 border border-gray-100 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
@@ -226,22 +225,22 @@ function MessagesContent() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Type message here..."
-              className="flex-1 bg-gray-50 text-xs rounded-xl px-4 py-2.5 border border-gray-150 focus:outline-none focus:border-[#5D9C0E]"
+              className="flex-1 bg-gray-50 text-xs rounded-xl px-3.5 py-2 border border-gray-150 focus:outline-none focus:border-[#5D9C0E] font-normal"
               disabled={isTypingSim}
             />
             <button 
               type="submit" 
-              className="bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white p-2.5 rounded-xl transition-colors cursor-pointer"
+              className="bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white p-2 rounded-xl transition-colors cursor-pointer"
               disabled={isTypingSim || !inputText.trim()}
             >
-              <Send size={16} />
+              <Send size={15} />
             </button>
           </form>
 
         </div>
 
       </div>
-    </>
+    </div>
   );
 }
 
@@ -250,7 +249,7 @@ export default function MessagesPage() {
     <Suspense 
       fallback={
         <div className="flex h-[80vh] items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5D9C0E]"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#5D9C0E]"></div>
         </div>
       }
     >

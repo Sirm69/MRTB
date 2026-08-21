@@ -165,7 +165,7 @@ export function AudiologyClinicalStep1({ visitationDate, fieldTeamMembers, onCom
 
   return (
     <form onSubmit={handleFormSubmission} className="space-y-6 w-full max-w-5xl mx-auto text-xs text-gray-800 antialiased font-medium pb-12">
-      <fieldset disabled={isReadOnly} className="space-y-6 w-full pb-20 contents">
+      <fieldset disabled={isReadOnly} className="space-y-6 w-full block border-0 p-0 m-0 min-w-0">
       
       {/* 1. TRAVEL INFORMATION */}
       <div className="bg-white p-5 rounded-xl border border-gray-300 shadow-sm space-y-4">

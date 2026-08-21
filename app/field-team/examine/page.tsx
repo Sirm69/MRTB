@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { SpeechTherapyClinicalStep1 } from '@/app/field-team/components/SpeechTherapyClinicalStep1';
 import { SpeechTherapyClinicalStep2 } from '@/app/field-team/components/SpeechTherapyClinicalStep2';
@@ -23,9 +23,9 @@ import { ProstheticsOrthoticsAcademicFormStep2 } from '@/app/field-team/componen
 import { ProstheticsOrthoticsClinicalStep1 } from '@/app/field-team/components/ProstheticsOrthoticsClinicalStep1';
 import { ProstheticsOrthoticsClinicalStep2 } from '@/app/field-team/components/ProstheticsOrthoticsClinicalStep2';
 import { FormEReportStep3 } from '@/app/field-team/components/FormEReportStep3';
-import { FileText } from 'lucide-react';
+import { FileText, ArrowLeft, ShieldCheck, CheckCircle2, Building2, Calendar, Users, Loader2 } from 'lucide-react';
 
-export default function ExaminePage() {
+function ExaminePageContent() {
   const forceScrollToTop = () => {
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
@@ -350,11 +350,11 @@ export default function ExaminePage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#FAFAFA] px-2 sm:px-4 py-5 md:p-8 pb-24 text-gray-800">
+    <div className="w-full min-h-screen bg-[#FAFAFA] px-3 sm:px-6 py-4 md:py-5 pb-20 text-gray-800 antialiased">
       
-      {/* CENTRED NAVIGATION HEADER */}
-      <div className="max-w-5xl mx-auto border-b border-gray-200 pb-4 mb-6">
-        <div className="flex items-center justify-between mb-2">
+      {/* COMPACT CENTRED NAVIGATION & STEPPER HEADER */}
+      <div className="max-w-5xl mx-auto space-y-3 mb-4">
+        <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-gray-100">
           <button 
             onClick={() => { 
               if (currentStep === 3) {
@@ -371,42 +371,142 @@ export default function ExaminePage() {
                 }
               }
             }} 
-            className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-xs font-semibold transition-colors"
+            className="h-8 px-3 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium inline-flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
           >
-            {currentStep === 3 ? '← Back to Step 2 Form' : currentStep === 2 ? '← Back to Step 1 Tables' : ((adminRole === 'admin_reviewer' || adminRole === 'admin_registrar') && !targetAdminId) ? '← Select Report' : '← Dashboard'}
+            <ArrowLeft size={13} />
+            <span>{currentStep === 3 ? 'Back to Step 2 Form' : currentStep === 2 ? 'Back to Step 1 Tables' : ((adminRole === 'admin_reviewer' || adminRole === 'admin_registrar') && !targetAdminId) ? 'Select Report' : 'Dashboard'}</span>
           </button>
-          <span className="text-[10px] uppercase font-extrabold text-[#066936] border border-[#CDE1B4] px-3 py-1 bg-[#EEF6DF] rounded-full tracking-wider shadow-sm">
-            Official Form Mode
-          </span>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-medium text-[#066936] border border-[#CDE1B4]/70 px-2.5 py-0.5 bg-[#EEF6DF] rounded-full inline-flex items-center gap-1 shadow-xs">
+              <ShieldCheck size={12} className="text-[#066936]" /> Official Assessment Mode
+            </span>
+          </div>
         </div>
-        
-        <h2 className="text-center text-lg sm:text-xl font-bold text-gray-900 uppercase tracking-tight mt-3">
-          Accreditation Assessment Dashboard
-        </h2>
+
+        {/* SLIM 3-STEP PROGRESS STEPPER */}
+        <div className="bg-white rounded-xl border border-gray-150 p-1.5 shadow-xs">
+          <div className="grid grid-cols-3 gap-1.5">
+            
+            {/* Step 1 */}
+            <button
+              type="button"
+              onClick={() => {
+                if (currentStep > 1) {
+                  setCurrentStep(1);
+                  setTimeout(() => forceScrollToTop(), 50);
+                }
+              }}
+              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-all ${
+                currentStep === 1
+                  ? 'bg-[#EEF6DF] text-[#066936]'
+                  : currentStep > 1
+                    ? 'text-gray-700 hover:bg-gray-50 cursor-pointer'
+                    : 'text-gray-400 opacity-60 cursor-not-allowed'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                currentStep === 1
+                  ? 'bg-[#5D9C0E] text-white shadow-xs'
+                  : currentStep > 1
+                    ? 'bg-[#066936] text-white'
+                    : 'bg-gray-100 text-gray-400'
+              }`}>
+                {currentStep > 1 ? <CheckCircle2 size={12} /> : '1'}
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-medium truncate block leading-tight">Phase 1: Verification</span>
+              </div>
+            </button>
+
+            {/* Step 2 */}
+            <button
+              type="button"
+              onClick={() => {
+                if (currentStep > 2) {
+                  setCurrentStep(2);
+                  setTimeout(() => forceScrollToTop(), 50);
+                }
+              }}
+              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-all ${
+                currentStep === 2
+                  ? 'bg-[#EEF6DF] text-[#066936]'
+                  : currentStep > 2
+                    ? 'text-gray-700 hover:bg-gray-50 cursor-pointer'
+                    : 'text-gray-400 opacity-60'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                currentStep === 2
+                  ? 'bg-[#5D9C0E] text-white shadow-xs'
+                  : currentStep > 2
+                    ? 'bg-[#066936] text-white'
+                    : 'bg-gray-100 text-gray-400'
+              }`}>
+                {currentStep > 2 ? <CheckCircle2 size={12} /> : '2'}
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-medium truncate block leading-tight">Phase 2: Questionnaire</span>
+              </div>
+            </button>
+
+            {/* Step 3 */}
+            <div
+              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-all ${
+                currentStep === 3
+                  ? 'bg-[#EEF6DF] text-[#066936]'
+                  : 'text-gray-400 opacity-60'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold shrink-0 ${
+                currentStep === 3
+                  ? 'bg-[#5D9C0E] text-white shadow-xs'
+                  : 'bg-gray-100 text-gray-400'
+              }`}>
+                3
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-medium truncate block leading-tight">Phase 3: Form E Report</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
 
-      {/* METADATA SUMMARY INFO: MODIFIED TO RENDER ONLY ON THE FIRST WORK VIEW */}
+      {/* COMPACT FACILITY UNDER INSPECTION CARD */}
       {currentStep === 1 && (
-        <div className="max-w-5xl mx-auto bg-white border border-[#CDE1B4]/70 rounded-2xl p-5 md:p-6 mb-8 shadow-sm">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center pb-4 border-b border-gray-100/80 gap-3">
-            <div>
-              <h3 className="text-[10px] font-bold text-[#5D9C0E] uppercase tracking-wider mb-0.5">Facility Under Inspection</h3>
-              <p className="font-extrabold text-gray-900 text-base md:text-lg tracking-tight leading-tight">{assessmentData.name}</p>
+        <div className="max-w-5xl mx-auto bg-white border border-gray-150 rounded-xl p-3.5 sm:p-4 mb-4 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-gray-100">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-[#EEF6DF] text-[#066936] flex items-center justify-center shrink-0">
+                <Building2 size={16} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-900 text-sm tracking-tight truncate">{assessmentData.name}</h3>
+                <p className="text-[11px] text-gray-400 truncate">{profileData?.address || `${profileData?.lga || ''}, ${profileData?.state || ''}`}</p>
+              </div>
             </div>
-            <div className="bg-[#EEF6DF] px-4 py-1.5 rounded-full border border-[#CDE1B4]/50 text-right w-fit">
-              <span className="text-[10px] uppercase font-black text-[#066936] tracking-wide">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] font-medium text-[#066936] bg-[#EEF6DF] px-2.5 py-0.5 rounded-full border border-[#CDE1B4]/50">
                 {profileData?.category || (isAcademicFlow ? 'Academic Category' : 'Clinical Category')}
+              </span>
+              <span className="text-[11px] text-gray-500 bg-gray-50 px-2.5 py-0.5 rounded-full border border-gray-200">
+                {profileData?.profession || '-'}
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-4 font-semibold text-gray-600">
-            <div className="flex items-start gap-2.5">
-              <span className="text-gray-400 font-medium">Profession:</span> 
-              <span className="text-gray-800 font-bold">{profileData?.profession || '-'}</span>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-2 text-gray-500">
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-400">Scheduled Date:</span>
+              <span className="text-gray-800 font-medium inline-flex items-center gap-1">
+                <Calendar size={12} className="text-[#5D9C0E]" /> {assessmentData.visitation_date || "Scheduled"}
+              </span>
             </div>
-            <div className="flex items-start gap-2.5">
-              <span className="text-gray-400 font-medium">Address:</span> 
-              <span className="text-gray-800 font-bold leading-relaxed">{profileData?.address || `${profileData?.lga || ''}, ${profileData?.state || ''}`}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-400">Lead Inspector:</span>
+              <span className="text-gray-800 font-medium">{fieldOfficerName || "Designated Lead"}</span>
             </div>
           </div>
         </div>
@@ -433,6 +533,9 @@ export default function ExaminePage() {
             assessmentData.assessment_type === 'speech_therapy_academic' ? (
               <SpeechAcademicTablesStep1 
                 isReadOnly={isStepReadOnly}
+                visitationDate={assessmentData.visitation_date}
+                fieldTeamMembers={fieldOfficerName}
+                institutionName={assessmentData.name}
                 spacesData={assessmentData.spaces}
                 clinicalData={assessmentData.clinicalTraining}
                 equipmentData={assessmentData.equipment}
@@ -443,6 +546,9 @@ export default function ExaminePage() {
             ) : assessmentData.assessment_type === 'audiology_academic' ? (
               <AudiologyAcademicTablesStep1 
                 isReadOnly={isStepReadOnly}
+                visitationDate={assessmentData.visitation_date}
+                fieldTeamMembers={fieldOfficerName}
+                institutionName={assessmentData.name}
                 spacesData={assessmentData.spaces}
                 clinicalData={assessmentData.clinicalTraining}
                 equipmentData={assessmentData.equipment}
@@ -453,6 +559,9 @@ export default function ExaminePage() {
             ) : assessmentData.assessment_type === 'occupational_therapy_academic' ? (
               <OccupationalTherapyAcademicTablesStep1 
                 isReadOnly={isStepReadOnly}
+                visitationDate={assessmentData.visitation_date}
+                fieldTeamMembers={fieldOfficerName}
+                institutionName={assessmentData.name}
                 spacesData={assessmentData.spaces}
                 clinicalData={assessmentData.clinicalTraining}
                 equipmentData={assessmentData.equipment}
@@ -463,6 +572,9 @@ export default function ExaminePage() {
             ) : assessmentData.assessment_type === 'physiotherapy_academic' ? (
               <PhysiotherapyAcademicTablesStep1 
                 isReadOnly={isStepReadOnly}
+                visitationDate={assessmentData.visitation_date}
+                fieldTeamMembers={fieldOfficerName}
+                institutionName={assessmentData.name}
                 spacesData={assessmentData.spaces}
                 clinicalData={assessmentData.clinicalTraining}
                 equipmentData={assessmentData.equipment}
@@ -473,6 +585,9 @@ export default function ExaminePage() {
             ) : (
               <ProstheticsOrthoticsAcademicTablesStep1 
                 isReadOnly={isStepReadOnly}
+                visitationDate={assessmentData.visitation_date}
+                fieldTeamMembers={fieldOfficerName}
+                institutionName={assessmentData.name}
                 spacesData={assessmentData.spaces}
                 clinicalData={assessmentData.clinicalTraining}
                 equipmentData={assessmentData.equipment}
@@ -643,5 +758,19 @@ export default function ExaminePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ExaminePage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#FAFCF8]">
+          <Loader2 className="animate-spin text-[#5D9C0E]" size={40} />
+        </div>
+      }
+    >
+      <ExaminePageContent />
+    </Suspense>
   );
 }

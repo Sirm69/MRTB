@@ -22,6 +22,14 @@ export default function RootLayout({
   return (
     // Fixed the smooth scroll warning and added hydration suppression
     <html lang="en" className="scroll-smooth" suppressHydrationWarning data-scroll-behavior="smooth">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@500;700;800;900&family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Great+Vibes&family=Italianno&family=MonteCarlo&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=UnifrakturMaguntia&display=swap" 
+          rel="stylesheet" 
+        />
+      </head>
       {/* Added suppressHydrationWarning to body to block Chrome extension errors */}
       <body className={`${inter.className} bg-slate-50 text-slate-900`} suppressHydrationWarning>
         
