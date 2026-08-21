@@ -1,0 +1,20 @@
+name: Sync GitHub Main to Azure Development
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Azure
+        run: |
+          git remote add azure https://${{ secrets.AZURE_PAT }}@dev.azure.com/MRTB-Licensing-Project/MRTB%20Licensing%20Project/_git/MRTB-Accreditaion-FE
+          git push azure main:development

@@ -604,7 +604,7 @@ function ExaminePageContent() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
@@ -615,7 +615,7 @@ function ExaminePageContent() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
@@ -626,7 +626,7 @@ function ExaminePageContent() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
@@ -637,7 +637,7 @@ function ExaminePageContent() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
@@ -648,7 +648,7 @@ function ExaminePageContent() {
                 onBack={() => { setCurrentStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 visitationDate={assessmentData.visitation_date}
                 fieldTeamMembers={fieldOfficerName}
-                institutionName={assessmentData.name} // Pass verified data attribute here
+                institutionName={assessmentData.name}
                 onComplete={handleStep2CompleteSave}
                 inspectionReport={inspectionReport}
               />
