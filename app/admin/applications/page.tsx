@@ -41,8 +41,8 @@ function ApplicationsContent() {
   
   const [activeTab, setActiveTab] = useState<"action_required" | "awaiting_registrar" | "all" | "rejected" | "field_reports" | "scheduled">("all");
 
-  const fetchApplications = async () => {
-    setIsLoading(true);
+  const fetchApplications = async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     const token = localStorage.getItem('adminAccessToken') || sessionStorage.getItem('adminAccessToken');
     
     if (!token) {
@@ -64,7 +64,7 @@ function ApplicationsContent() {
     } catch (error) {
       console.error("Error loading admin applications:", error);
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   };
 
@@ -184,25 +184,25 @@ function ApplicationsContent() {
     <div className="pb-12 relative w-full">
       
       {/* Title Header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 pb-4 border-b border-gray-100">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">All Applications</h1>
-          <p className="text-sm text-gray-500">Track and review registry applications across categories</p>
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 tracking-tight">All Applications</h1>
+          <p className="text-xs text-gray-400 font-normal mt-0.5">Track and review registry applications across categories</p>
         </div>
         <button 
           onClick={handleDownloadCheckedReport}
-          className="flex items-center justify-center gap-2 bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white px-6 py-2.5 rounded-full shadow-md font-bold text-xs transition-colors self-start sm:self-auto"
+          className="flex items-center justify-center gap-1.5 bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white px-4 h-9 rounded-xl shadow-sm font-medium text-xs transition-colors self-start sm:self-auto cursor-pointer"
         >
-          <Download size={14} /> Download Report
+          <Download size={13} /> Download Report
         </button>
       </div>
 
       {/* CENTRALIZED TABS */}
-      <div className="mb-6 flex flex-wrap gap-2 md:gap-4 w-full justify-center">
+      <div className="mb-6 flex flex-wrap gap-2 md:gap-3 w-full justify-center">
         <button 
           onClick={() => setActiveTab('all')} 
-          className={`px-5 py-2.5 rounded-full font-bold text-xs transition-all ${
-            activeTab === 'all' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+          className={`px-4 py-2 rounded-full font-medium text-xs transition-all ${
+            activeTab === 'all' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
           }`}
         >
           All Applications
@@ -210,58 +210,58 @@ function ApplicationsContent() {
         
         <button 
           onClick={() => setActiveTab('action_required')} 
-          className={`px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${
-            activeTab === 'action_required' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+          className={`px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${
+            activeTab === 'action_required' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
           }`}
         >
-          <AlertCircle size={14} /> Action Required
+          <AlertCircle size={13} /> Action Required
         </button>
 
         <button 
           onClick={() => setActiveTab('awaiting_registrar')} 
-          className={`px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${
-            activeTab === 'awaiting_registrar' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+          className={`px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${
+            activeTab === 'awaiting_registrar' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
           }`}
         >
-          <ClipboardCheck size={14} /> Awaiting Registrar
+          <ClipboardCheck size={13} /> Awaiting Registrar
         </button>
 
         <button 
           onClick={() => setActiveTab('rejected')} 
-          className={`px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${
-            activeTab === 'rejected' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+          className={`px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${
+            activeTab === 'rejected' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
           }`}
         >
-          <XCircle size={14} /> Rejected
+          <XCircle size={13} /> Rejected
         </button>
 
         <button 
           onClick={() => setActiveTab('field_reports')} 
-          className={`px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${
-            activeTab === 'field_reports' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+          className={`px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${
+            activeTab === 'field_reports' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
           }`}
         >
-          <FileText size={14} /> Field Reports
+          <FileText size={13} /> Field Reports
         </button>
 
         <button 
           onClick={() => setActiveTab('scheduled')} 
-          className={`px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${
-            activeTab === 'scheduled' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+          className={`px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${
+            activeTab === 'scheduled' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
           }`}
         >
-          <Calendar size={14} /> Inspection Scheduled
+          <Calendar size={13} /> Inspection Scheduled
         </button>
       </div>
 
       {/* SEARCH BAR */}
-      <div className="bg-white rounded-3xl p-4 mb-6 shadow-sm border border-gray-100 flex items-center gap-3">
+      <div className="bg-white rounded-2xl md:rounded-3xl p-3.5 mb-6 border border-gray-100 flex items-center gap-3">
         <input 
           type="text" 
           placeholder="Search by facility name, specialty discipline, or account email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 bg-gray-50 text-xs rounded-xl px-4 py-2.5 border border-gray-150 focus:outline-none focus:border-[#5D9C0E] font-medium text-gray-800"
+          className="flex-1 bg-gray-50 text-xs rounded-xl px-4 py-2.5 border border-gray-150 focus:outline-none focus:border-[#5D9C0E] font-normal text-gray-800"
         />
       </div>
 
@@ -271,11 +271,11 @@ function ApplicationsContent() {
           <Loader2 className="animate-spin text-[#5D9C0E]" size={36} />
         </div>
       ) : (
-        <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto w-full">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-gray-50 text-gray-400 font-bold uppercase tracking-wider border-b border-gray-100">
+                <tr className="bg-gray-50/70 text-gray-400 font-medium text-[11px] uppercase tracking-wider border-b border-gray-100">
                   <th className="p-4 w-[60px] text-center">Select</th>
                   <th className="p-4">Facility Name</th>
                   <th className="p-4">Discipline</th>
@@ -298,17 +298,17 @@ function ApplicationsContent() {
                       </td>
                       <td className="p-4">
                         <div>
-                          <p className="font-bold text-gray-800 text-sm leading-tight mb-0.5">{item.name}</p>
-                          <p className="text-gray-400 text-[10px]">{item.email}</p>
+                          <p className="font-semibold text-gray-800 text-sm leading-tight mb-0.5">{item.name}</p>
+                          <p className="text-gray-400 text-[10.5px] font-normal">{item.email}</p>
                         </div>
                       </td>
-                      <td className="p-4 font-semibold text-gray-700">{item.profession}</td>
-                      <td className="p-4 font-semibold text-gray-700">{item.category}</td>
+                      <td className="p-4 font-normal text-gray-700">{item.profession}</td>
+                      <td className="p-4 font-normal text-gray-700">{item.category}</td>
                       <td className="p-4">{formatStatus(item.status, item.assessment_status, item.is_paid, item.has_finalized_report)}</td>
                       <td className="p-4 text-center">
                         <button 
                           onClick={() => setSelectedUserId(item.id)}
-                          className="bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-bold px-4 py-2 rounded-full transition-colors cursor-pointer text-[11px] shadow-sm"
+                          className="bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-medium px-4 py-1.5 rounded-full transition-colors cursor-pointer text-[11px]"
                         >
                           Review Case
                         </button>
@@ -332,7 +332,7 @@ function ApplicationsContent() {
           userId={selectedUserId}
           adminRole={adminRole}
           onClose={() => setSelectedUserId(null)}
-          onRefreshTable={fetchApplications}
+          onRefreshTable={() => fetchApplications(false)}
         />
       )}
 

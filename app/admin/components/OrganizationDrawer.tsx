@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, FileText, CheckCircle2, X, CalendarDays, MessageSquare, CheckCircle, AlertTriangle, Users, ClipboardCheck } from 'lucide-react';
+import { Loader2, FileText, CheckCircle2, X, CalendarDays, MessageSquare, CheckCircle, AlertTriangle, Users, ClipboardCheck, Pencil, UserPlus, Search, ShieldCheck, Award } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PreAssessmentView from './PreAssessmentView';
 import FullAssessmentView from './AssessmentView';
+import CertificateModal from '@/app/components/CertificateModal';
 
 interface OrganizationDrawerProps {
   userId: number | null;
@@ -20,11 +21,13 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [activeDocument, setActiveDocument] = useState<'pre_assessment' | 'assessment' | null>(null);
+  const [showCertModal, setShowCertModal] = useState(false);
 
   // Form Inputs
   const [costInput, setCostInput] = useState({ estimate: "", logistics: "" });
   const [visitDate, setVisitDate] = useState("");
   const [adminComment, setAdminComment] = useState("");
+  const [isEditingCost, setIsEditingCost] = useState(false);
 
   // Interactive Calendar State
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
@@ -38,6 +41,15 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
     payload: any;
     successMessage: string;
   } | null>(null);
+
+  // Field Inspector Assignment Modal State
+  const [isAssignInspectorsModalOpen, setIsAssignInspectorsModalOpen] = useState(false);
+  const [inspectorsList, setInspectorsList] = useState<any[]>([]);
+  const [selectedInspectorIds, setSelectedInspectorIds] = useState<number[]>([]);
+  const [leaderInspectorId, setLeaderInspectorId] = useState<number | null>(null);
+  const [isLoadingInspectors, setIsLoadingInspectors] = useState(false);
+  const [inspectorSearchQuery, setInspectorSearchQuery] = useState('');
+  const [isSubmittingInspectors, setIsSubmittingInspectors] = useState(false);
 
   const isFieldTeam = adminRole === 'admin_field' || adminRole === 'Field Team';
   const isDocumentOpen = activeDocument !== null;
@@ -95,6 +107,96 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
     }
   };
 
+  const fetchInspectors = async () => {
+    if (!userId) return;
+    setIsLoadingInspectors(true);
+    const token = localStorage.getItem('adminAccessToken') || sessionStorage.getItem('adminAccessToken');
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/field-inspectors?facility_id=${userId}`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const inspectors = data.data || [];
+        setInspectorsList(inspectors);
+        
+        const preAssigned = inspectors.filter((i: any) => i.is_assigned).map((i: any) => i.id);
+        setSelectedInspectorIds(preAssigned);
+
+        const currentLeader = inspectors.find((i: any) => i.is_leader);
+        if (currentLeader) {
+          setLeaderInspectorId(currentLeader.id);
+        } else if (preAssigned.length > 0) {
+          setLeaderInspectorId(preAssigned[0]);
+        } else {
+          setLeaderInspectorId(null);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching field inspectors:", error);
+    } finally {
+      setIsLoadingInspectors(false);
+    }
+  };
+
+  const handleOpenAssignModal = () => {
+    setIsAssignInspectorsModalOpen(true);
+    setInspectorSearchQuery('');
+    fetchInspectors();
+  };
+
+  const handleToggleInspector = (inspectorId: number) => {
+    setSelectedInspectorIds(prev => {
+      if (prev.includes(inspectorId)) {
+        const next = prev.filter(id => id !== inspectorId);
+        if (leaderInspectorId === inspectorId) {
+          setLeaderInspectorId(next.length > 0 ? next[0] : null);
+        }
+        return next;
+      } else {
+        const next = [...prev, inspectorId];
+        if (leaderInspectorId === null) {
+          setLeaderInspectorId(inspectorId);
+        }
+        return next;
+      }
+    });
+  };
+
+  const handleSavePanelAssignment = async () => {
+    if (!userId) return;
+    setIsSubmittingInspectors(true);
+    const token = localStorage.getItem('adminAccessToken') || sessionStorage.getItem('adminAccessToken');
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/assign-facility-inspectors`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body: JSON.stringify({
+          facility_id: userId,
+          admin_ids: selectedInspectorIds,
+          leader_admin_id: leaderInspectorId
+        })
+      });
+      if (response.ok) {
+        setIsAssignInspectorsModalOpen(false);
+        await fetchUserDetails();
+        onRefreshTable();
+      } else {
+        alert("Failed to save inspection panel assignments.");
+      }
+    } catch (error) {
+      console.error("Error assigning inspectors:", error);
+      alert("Network error.");
+    } finally {
+      setIsSubmittingInspectors(false);
+    }
+  };
+
   useEffect(() => {
     if (!userId) {
       setActiveDocument(null);
@@ -102,8 +204,10 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
       setVisitDate("");
       setAdminComment("");
       setConfirmModal(null);
+      setIsEditingCost(false);
       return;
     }
+    setIsEditingCost(false);
     fetchUserDetails();
   }, [userId]);
 
@@ -133,6 +237,7 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
         body: JSON.stringify(payload)
       });
       if (response.ok) {
+        setIsEditingCost(false);
         onRefreshTable();
         if (shouldCloseDrawer) onClose();
         else await fetchUserDetails();
@@ -502,9 +607,17 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
                             activePhase === 2 && (assessmentStatus === 'approved' || assessmentStatus === 'rejected') ? (
                               <div className="bg-[#f8fcf5] border border-[#CDE1B4]/50 rounded-xl p-4 flex flex-col items-center justify-center text-center space-y-3 w-full">
                                 {assessmentStatus === 'approved' ? (
-                                  <div className="flex flex-col items-center">
+                                  <div className="flex flex-col items-center w-full">
                                     <CheckCircle2 size={24} className="text-[#066936] mb-1" />
                                     <span className="text-[12px] font-extrabold text-[#066936]">Accreditation Granted</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowCertModal(true)}
+                                      className="w-full mt-3 py-2.5 bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-semibold rounded-xl text-[11px] transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                                    >
+                                      <Award size={15} />
+                                      View / Export Certificate
+                                    </button>
                                   </div>
                                 ) : (
                                   <div className="flex flex-col items-center">
@@ -603,37 +716,63 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
                    {/* INSPECTION PANEL MEMBERS & LEADER SELECTION */}
                    {activePhase === 2 && (
                      <div className="mb-4 pt-4 border-t border-[#CDE1B4]/50 animate-in fade-in">
-                       <p className="text-[#5D9C0E] text-[10px] mb-2 uppercase tracking-wider font-medium flex items-center gap-1">
-                         <Users size={12} /> Inspection Panel
-                       </p>
+                       <div className="flex items-center justify-between mb-2.5">
+                         <p className="text-[#5D9C0E] text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1.5">
+                           <Users size={13} /> Inspection Panel
+                         </p>
+                         {!isFieldTeam && (adminRole === 'admin_reviewer' || adminRole === 'admin_registrar') && (
+                           <button
+                             type="button"
+                             onClick={handleOpenAssignModal}
+                             disabled={isUpdatingStatus}
+                             className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#EEF6DF] hover:bg-[#dff0c5] text-[#066936] text-[10px] font-medium rounded-lg transition-colors cursor-pointer border border-[#CDE1B4]/60 disabled:opacity-50"
+                           >
+                             <UserPlus size={12} />
+                             {drawerData?.panel_members_details && drawerData.panel_members_details.length > 0 ? 'Edit Panel' : 'Assign Inspectors'}
+                           </button>
+                         )}
+                       </div>
+
                        <div className="bg-[#FAFCF8] border border-[#CDE1B4]/30 rounded-xl p-3 space-y-2">
                          {drawerData?.panel_members_details && drawerData.panel_members_details.length > 0 ? (
                            drawerData.panel_members_details.map((member: any) => (
-                             <div key={member.id} className="flex items-center justify-between bg-white px-3 py-1.5 rounded-lg border border-gray-150">
+                             <div key={member.id} className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-gray-150 shadow-xs">
                                <div className="flex flex-col pr-2 truncate">
-                                 <span className="text-[12px] font-bold text-gray-800 truncate">{member.name}</span>
-                                 <span className="text-[9.5px] text-gray-400">ID: {member.staffId}</span>
+                                 <div className="flex items-center gap-1.5">
+                                   <span className="text-xs font-medium text-gray-900 truncate">{member.name}</span>
+                                   {member.is_leader && (
+                                     <span className="text-[8.5px] font-bold text-[#066936] bg-[#EEF6DF] px-1.5 py-0.5 rounded border border-[#CDE1B4]/50 uppercase tracking-wider shrink-0">
+                                       Leader
+                                     </span>
+                                   )}
+                                 </div>
+                                 <span className="text-[10px] text-gray-400 font-mono">ID: {member.staffId}</span>
                                </div>
-                               {member.is_leader ? (
-                                 <span className="text-[9px] font-bold text-[#066936] bg-[#EEF6DF] px-2 py-0.5 rounded border border-[#CDE1B4]/40 uppercase tracking-wider shrink-0">
-                                   Leader
-                                 </span>
-                               ) : (
-                                 (adminRole === 'admin_reviewer' || adminRole === 'admin_registrar') && (
-                                   <button
-                                     type="button"
-                                     onClick={() => handleSetLeader(member.id)}
-                                     disabled={isUpdatingStatus}
-                                     className="text-[9.5px] font-bold text-[#5D9C0E] hover:text-[#4a7c0b] px-2 py-0.5 border border-[#5D9C0E]/30 rounded hover:bg-[#FAFCF8] transition-colors shrink-0 disabled:opacity-50"
-                                   >
-                                     Make Leader
-                                   </button>
-                                 )
+                               {!member.is_leader && (adminRole === 'admin_reviewer' || adminRole === 'admin_registrar') && !isFieldTeam && (
+                                 <button
+                                   type="button"
+                                   onClick={() => handleSetLeader(member.id)}
+                                   disabled={isUpdatingStatus}
+                                   className="text-[9.5px] font-medium text-[#5D9C0E] hover:text-[#4a7c0b] px-2 py-0.5 border border-[#5D9C0E]/30 rounded-md hover:bg-[#FAFCF8] transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+                                 >
+                                   Set Leader
+                                 </button>
                                )}
                              </div>
                            ))
                          ) : (
-                           <p className="text-[11px] text-gray-400 italic text-center">No field inspectors assigned yet.</p>
+                           <div className="py-3 text-center flex flex-col items-center justify-center">
+                             <p className="text-[11px] text-gray-400 italic mb-2">No field inspectors assigned yet.</p>
+                             {!isFieldTeam && (adminRole === 'admin_reviewer' || adminRole === 'admin_registrar') && (
+                               <button
+                                 type="button"
+                                 onClick={handleOpenAssignModal}
+                                 className="text-xs font-medium text-[#5D9C0E] hover:text-[#4a7c0b] flex items-center gap-1 cursor-pointer"
+                               >
+                                 <UserPlus size={13} /> Select Team Members
+                               </button>
+                             )}
+                           </div>
                          )}
                        </div>
                      </div>
@@ -653,7 +792,10 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
                   <div className="w-full md:w-1/2 h-full overflow-y-auto bg-white px-3 py-4 md:p-6 flex flex-col">
                     
                     <div className="mb-6">
-                      <h3 className="text-[11px] font-medium text-[#066936] mb-3 uppercase tracking-wider flex items-center gap-1.5">Cost & Remarks</h3>
+                      <h3 className="text-[11px] font-medium text-[#066936] mb-3 uppercase tracking-wider flex items-center gap-1.5">
+                        Cost & Remarks
+                      </h3>
+
                       {isPaid ? (
                         <div className="flex flex-col p-4 bg-[#F8FCF5] border border-[#5D9C0E]/30 rounded-xl mb-4 text-center items-center justify-center">
                           <CheckCircle size={28} className="text-[#5D9C0E] mb-2" />
@@ -661,21 +803,49 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
                           <p className="text-[11px] text-gray-500 mt-1 font-medium">Registration & Logistics paid by user.</p>
                         </div>
                       ) : (
-                        <div className={`p-4 rounded-xl border transition-colors ${!isLockedForReviewer && activePhase === 1 ? 'border-[#5D9C0E]/50 bg-white shadow-sm' : 'border-gray-200 bg-slate-50'}`}>
+                        <div className={`p-4 rounded-xl border transition-colors ${
+                          (adminRole === 'admin_registrar' ? isEditingCost : (!isLockedForReviewer && activePhase === 1))
+                            ? 'border-[#5D9C0E]/50 bg-white shadow-sm' 
+                            : 'border-gray-200 bg-slate-50'
+                        }`}>
                           
                           <div className="grid grid-cols-2 gap-3 mb-3">
                             <div>
                               <label className="text-[9px] text-gray-500 mb-1 block uppercase font-medium">Registration</label>
                               <div className="relative">
-                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium">₦</span>
-                                <input type="number" value={costInput.estimate} onChange={(e) => setCostInput({...costInput, estimate: e.target.value})} disabled={isLockedForReviewer || activePhase === 2} className="w-full pl-7 pr-2 py-1.5 rounded-md border border-gray-200 outline-none text-gray-800 text-[13px] focus:border-[#5D9C0E] disabled:bg-gray-100 disabled:text-gray-400 transition-all font-medium" />
+                                <span className={`absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-medium ${
+                                  (adminRole === 'admin_registrar' ? !isEditingCost : (isLockedForReviewer || activePhase === 2)) ? 'text-gray-400 opacity-60' : 'text-gray-400'
+                                }`}>₦</span>
+                                <input 
+                                  type="number" 
+                                  value={costInput.estimate} 
+                                  onChange={(e) => setCostInput({...costInput, estimate: e.target.value})} 
+                                  disabled={adminRole === 'admin_registrar' ? !isEditingCost : (isLockedForReviewer || activePhase === 2)} 
+                                  className={`w-full pl-7 pr-2 py-1.5 rounded-md border border-gray-200 outline-none text-[13px] font-medium transition-all ${
+                                    (adminRole === 'admin_registrar' ? !isEditingCost : (isLockedForReviewer || activePhase === 2))
+                                      ? 'bg-gray-100/70 text-gray-400 opacity-60 cursor-not-allowed select-none' 
+                                      : 'bg-white text-gray-800 focus:border-[#5D9C0E]'
+                                  }`} 
+                                />
                               </div>
                             </div>
                             <div>
                               <label className="text-[9px] text-gray-500 mb-1 block uppercase font-medium">Logistics</label>
                               <div className="relative">
-                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium">₦</span>
-                                <input type="number" value={costInput.logistics} onChange={(e) => setCostInput({...costInput, logistics: e.target.value})} disabled={isLockedForReviewer || activePhase === 2} className="w-full pl-7 pr-2 py-1.5 rounded-md border border-gray-200 outline-none text-gray-800 text-[13px] focus:border-[#5D9C0E] disabled:bg-gray-100 disabled:text-gray-400 transition-all font-medium" />
+                                <span className={`absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-medium ${
+                                  (adminRole === 'admin_registrar' ? !isEditingCost : (isLockedForReviewer || activePhase === 2)) ? 'text-gray-400 opacity-60' : 'text-gray-400'
+                                }`}>₦</span>
+                                <input 
+                                  type="number" 
+                                  value={costInput.logistics} 
+                                  onChange={(e) => setCostInput({...costInput, logistics: e.target.value})} 
+                                  disabled={adminRole === 'admin_registrar' ? !isEditingCost : (isLockedForReviewer || activePhase === 2)} 
+                                  className={`w-full pl-7 pr-2 py-1.5 rounded-md border border-gray-200 outline-none text-[13px] font-medium transition-all ${
+                                    (adminRole === 'admin_registrar' ? !isEditingCost : (isLockedForReviewer || activePhase === 2))
+                                      ? 'bg-gray-100/70 text-gray-400 opacity-60 cursor-not-allowed select-none' 
+                                      : 'bg-white text-gray-800 focus:border-[#5D9C0E]'
+                                  }`} 
+                                />
                               </div>
                             </div>
                           </div>
@@ -683,25 +853,67 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
                           <div>
                              <label className="text-[9px] text-gray-500 mb-1 block uppercase font-medium">Internal Remarks</label>
                              <div className="relative">
-                                <MessageSquare size={12} className="absolute left-2.5 top-2.5 text-gray-300" />
-                                <textarea value={adminComment} onChange={(e) => setAdminComment(e.target.value)} disabled={isLockedForReviewer} placeholder="Add internal notes..." className="w-full pl-7 pr-2 py-2 rounded-md border border-gray-200 outline-none text-gray-700 text-[12px] focus:border-[#5D9C0E] disabled:bg-gray-100 disabled:text-gray-400 resize-none h-14 transition-all font-medium" />
+                                <MessageSquare size={12} className={`absolute left-2.5 top-2.5 ${
+                                  (adminRole === 'admin_registrar' ? !isEditingCost : isLockedForReviewer) ? 'text-gray-300 opacity-60' : 'text-gray-400'
+                                }`} />
+                                <textarea 
+                                  value={adminComment} 
+                                  onChange={(e) => setAdminComment(e.target.value)} 
+                                  disabled={adminRole === 'admin_registrar' ? !isEditingCost : isLockedForReviewer} 
+                                  placeholder="Add internal notes..." 
+                                  className={`w-full pl-7 pr-2 py-2 rounded-md border border-gray-200 outline-none text-[12px] resize-none h-14 transition-all font-medium ${
+                                    (adminRole === 'admin_registrar' ? !isEditingCost : isLockedForReviewer)
+                                      ? 'bg-gray-100/70 text-gray-400 opacity-60 cursor-not-allowed select-none' 
+                                      : 'bg-white text-gray-700 focus:border-[#5D9C0E]'
+                                  }`} 
+                                />
                              </div>
                           </div>
 
-                          {!isLockedForReviewer && activePhase === 1 && !isLockedForRegistrar && (
+                          {!isLockedForReviewer && activePhase === 1 && !isLockedForRegistrar && adminRole !== 'admin_registrar' && (
                             <div className="mt-3 text-[9px] text-gray-400 italic text-center font-medium">
                               Note: Fees and remarks will be saved when you click Accept or Reject.
                             </div>
                           )}
 
-                          {adminRole === 'admin_registrar' && isLockedForRegistrar && (
-                            <button 
-                                onClick={() => handleSaveData({ cost_estimate: currentEst, logistics_fee: currentLog, admin_comment: currentComment }, "Updates saved successfully!", false)}
-                                disabled={isUpdatingStatus}
-                                className="w-full mt-4 py-2 bg-[#EEF6DF] text-[#066936] font-medium text-[10px] rounded-lg border border-[#5D9C0E]/30 hover:bg-[#dcedc1] transition-colors flex justify-center items-center uppercase tracking-wider"
-                            >
-                                {isUpdatingStatus ? <Loader2 size={12} className="animate-spin" /> : "Save Updates to Cost & Remarks"}
-                            </button>
+                          {adminRole === 'admin_registrar' && !isPaid && (
+                            !isEditingCost ? (
+                              <button 
+                                type="button"
+                                onClick={() => setIsEditingCost(true)}
+                                className="w-full mt-4 py-2 bg-[#EEF6DF] text-[#066936] font-medium text-[10px] rounded-lg border border-[#5D9C0E]/30 hover:bg-[#dcedc1] transition-colors flex justify-center items-center gap-1.5 uppercase tracking-wider shadow-xs"
+                              >
+                                <Pencil size={11} /> Edit Cost & Remarks
+                              </button>
+                            ) : (
+                              <div className="flex gap-2 mt-4">
+                                <button 
+                                  type="button"
+                                  disabled={isUpdatingStatus}
+                                  onClick={() => {
+                                    setIsEditingCost(false);
+                                    if (drawerData?.pre_assessment) {
+                                      setCostInput({
+                                        estimate: drawerData.pre_assessment.cost_estimate?.toString() || "",
+                                        logistics: drawerData.pre_assessment.logistics_fee?.toString() || ""
+                                      });
+                                      setAdminComment(drawerData.pre_assessment.admin_comment || "");
+                                    }
+                                  }}
+                                  className="flex-1 py-2 bg-gray-100 text-gray-600 font-medium text-[10px] rounded-lg border border-gray-200 hover:bg-gray-200 transition-colors flex justify-center items-center uppercase tracking-wider disabled:opacity-50"
+                                >
+                                  Cancel
+                                </button>
+                                <button 
+                                  type="button"
+                                  onClick={() => handleSaveData({ cost_estimate: currentEst, logistics_fee: currentLog, admin_comment: currentComment }, "Updates saved successfully!", false)}
+                                  disabled={isUpdatingStatus}
+                                  className="flex-1 py-2 bg-[#066936] text-white font-medium text-[10px] rounded-lg shadow-sm hover:bg-[#044c27] transition-colors flex justify-center items-center uppercase tracking-wider disabled:opacity-50"
+                                >
+                                  {isUpdatingStatus ? <Loader2 size={12} className="animate-spin" /> : "Save Changes"}
+                                </button>
+                              </div>
+                            )
                           )}
                         </div>
                        )}
@@ -787,6 +999,190 @@ export default function OrganizationDrawer({ userId, adminRole, onClose, onRefre
               </div>
             </div>
           </div>
+        )}
+
+        {/* DIRECT FIELD TEAM ASSIGNMENT MODAL */}
+        {isAssignInspectorsModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-xs px-4 animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-[560px] rounded-2xl md:rounded-3xl p-6 border border-gray-100 shadow-2xl relative flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+              
+              {/* Header */}
+              <div className="flex items-start justify-between pb-3 border-b border-gray-100">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-8 h-8 rounded-lg bg-[#EEF6DF] text-[#066936] flex items-center justify-center">
+                      <Users size={16} />
+                    </div>
+                    <h3 className="text-base font-semibold text-gray-900">Assign Field Inspectors</h3>
+                  </div>
+                  <p className="text-xs text-gray-400 font-normal">
+                    Select field team officers to deploy for <strong className="text-gray-800 font-medium">{drawerData?.profile?.name}</strong>.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setIsAssignInspectorsModalOpen(false)} 
+                  className="p-1.5 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Search */}
+              <div className="relative my-3.5">
+                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                 <input 
+                   type="text" 
+                   placeholder="Search by inspector name or staff ID..." 
+                   value={inspectorSearchQuery} 
+                   onChange={(e) => setInspectorSearchQuery(e.target.value)} 
+                   className="w-full border border-gray-200 bg-gray-50/70 rounded-xl py-2 pl-9 pr-4 text-xs outline-none focus:border-[#5D9C0E] focus:bg-white transition-colors" 
+                 />
+              </div>
+
+              {/* List */}
+              <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl mb-4 min-h-[220px]">
+                {isLoadingInspectors ? (
+                  <div className="flex flex-col justify-center items-center h-full min-h-[200px] text-gray-400">
+                    <Loader2 size={24} className="animate-spin text-[#5D9C0E] mb-2" />
+                    <span className="text-xs font-normal">Loading field team officers...</span>
+                  </div>
+                ) : (
+                  (() => {
+                    const filtered = inspectorsList.filter(i => 
+                      i.name.toLowerCase().includes(inspectorSearchQuery.toLowerCase()) || 
+                      (i.staffId && i.staffId.toLowerCase().includes(inspectorSearchQuery.toLowerCase()))
+                    );
+
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="flex flex-col justify-center items-center h-full min-h-[200px] text-gray-400 p-6 text-center">
+                          <Users size={28} className="mb-2 opacity-40 text-gray-400" />
+                          <p className="text-xs font-normal">No approved field team officers found.</p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="flex flex-col divide-y divide-gray-50">
+                        {filtered.map(inspector => {
+                          const isSelected = selectedInspectorIds.includes(inspector.id);
+                          const isLeader = leaderInspectorId === inspector.id;
+                          const isBusy = inspector.is_busy_elsewhere;
+
+                          return (
+                            <div 
+                              key={inspector.id} 
+                              className={`p-3 flex items-center justify-between transition-colors ${
+                                isBusy && !isSelected ? 'bg-gray-50/60 opacity-60' : isSelected ? 'bg-[#FAFCF8]' : 'hover:bg-gray-50/50'
+                              }`}
+                            >
+                              <label className="flex items-center gap-3 cursor-pointer flex-1 min-w-0 pr-3">
+                                <input 
+                                  type="checkbox" 
+                                  checked={isSelected} 
+                                  onChange={() => handleToggleInspector(inspector.id)} 
+                                  className="w-4 h-4 rounded border-gray-300 text-[#5D9C0E] accent-[#5D9C0E] cursor-pointer" 
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-xs font-medium text-gray-900 truncate">{inspector.name}</p>
+                                    <span className="text-[10px] font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200/60">
+                                      {inspector.staffId}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-[10.5px] text-gray-400 truncate">{inspector.email}</span>
+                                    {isBusy && (
+                                      <span className="text-[9.5px] text-amber-700 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded font-normal shrink-0">
+                                        Active on: {inspector.busy_facility_name || 'Other Facility'}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </label>
+
+                              {/* Leader selection toggle */}
+                              {isSelected && (
+                                <button
+                                  type="button"
+                                  onClick={() => setLeaderInspectorId(inspector.id)}
+                                  className={`text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-all shrink-0 cursor-pointer flex items-center gap-1 ${
+                                    isLeader
+                                      ? 'bg-[#066936] text-white border-[#066936] shadow-xs'
+                                      : 'bg-white text-gray-600 border-gray-200 hover:border-[#5D9C0E] hover:text-[#5D9C0E]'
+                                  }`}
+                                >
+                                  {isLeader ? (
+                                    <>
+                                      <CheckCircle2 size={11} className="text-white" />
+                                      <span>Team Leader</span>
+                                    </>
+                                  ) : (
+                                    <span>Make Leader</span>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()
+                )}
+              </div>
+
+              {/* Selected Count & Leader Note */}
+              <div className="flex items-center justify-between text-xs text-gray-500 mb-4 px-1">
+                <span>Selected: <strong className="text-gray-900">{selectedInspectorIds.length}</strong> inspector{selectedInspectorIds.length === 1 ? '' : 's'}</span>
+                {leaderInspectorId && (
+                  <span className="text-[11px] text-[#066936] font-medium flex items-center gap-1">
+                    <CheckCircle2 size={12} /> Leader assigned
+                  </span>
+                )}
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+                <button 
+                  type="button" 
+                  onClick={() => setIsAssignInspectorsModalOpen(false)} 
+                  className="px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button" 
+                  disabled={isSubmittingInspectors} 
+                  onClick={handleSavePanelAssignment} 
+                  className="bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white px-5 py-2 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
+                >
+                  {isSubmittingInspectors ? <Loader2 size={14} className="animate-spin" /> : 'Save Panel Assignment'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Certificate Modal for Admin View / Export */}
+        {drawerData && (
+          <CertificateModal
+            isOpen={showCertModal}
+            onClose={() => setShowCertModal(false)}
+            certificateData={{
+              id: drawerData.profile?.id || userId,
+              organizationName: drawerData.profile?.institution_name || drawerData.profile?.facility_name || drawerData.profile?.name || drawerData.name || "ACCREDITED FACILITY",
+              location: [drawerData.profile?.lga || drawerData.profile?.city || drawerData.lga, drawerData.profile?.state || drawerData.state].filter(Boolean).join(", ") || drawerData.profile?.address || drawerData.address || "NIGERIA",
+              discipline: drawerData.profile?.discipline || drawerData.profile?.profession || drawerData.discipline || drawerData.profession || "Physiotherapy",
+              programmeName: drawerData.profile?.programme_name || drawerData.programme_name || (drawerData.profile?.discipline || drawerData.discipline ? `Bachelor of ${drawerData.profile?.discipline || drawerData.discipline} Training Programme` : undefined),
+              duration: drawerData.inspection_report?.step3?.duration || "Five (5) Years",
+              decisionType: drawerData.inspection_report?.step3?.decision || "Full Accreditation",
+              registrationNumber: drawerData.profile?.registration_number || drawerData.profile?.accreditation_number || drawerData.profile?.user_code || drawerData.registration_number || drawerData.accreditation_number || drawerData.user_code || `MRTB/SPP/${(drawerData.profile?.discipline || drawerData.profile?.profession || drawerData.profession || "PT").slice(0,2).toUpperCase()}/${String(drawerData.profile?.id || userId || 1).padStart(4, "0")}`,
+              accreditationDate: drawerData.profile?.visit_date || drawerData.visit_date
+                ? new Date(drawerData.profile?.visit_date || drawerData.visit_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) 
+                : new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }),
+              issueMonthYear: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+            }}
+          />
         )}
 
       </div>

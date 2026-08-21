@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Truck, Users, Building2, BookOpen, ClipboardCheck, Plus, Trash2, Save, Layers } from 'lucide-react';
+import { Truck, Users, Building2, BookOpen, ClipboardCheck, Plus, Trash2, Save, Layers, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface Step2Props {
   visitationDate: string;
@@ -141,101 +141,20 @@ export function ProstheticsOrthoticsAcademicFormStep2({ visitationDate, fieldTea
   const isDirty = initialDataString !== "" && currentDataString !== initialDataString;
 
   return (
-    <form onSubmit={handleFormSubmission} className="space-y-6 w-full max-w-5xl mx-auto text-xs text-gray-800 antialiased font-medium pb-24">
-      <fieldset disabled={isReadOnly} className="space-y-6 w-full pb-20 contents">
+    <form onSubmit={handleFormSubmission} className="space-y-6 w-full max-w-5xl mx-auto text-xs text-gray-800 antialiased font-normal pb-20">
+      <fieldset disabled={isReadOnly} className="space-y-6 w-full block border-0 p-0 m-0 min-w-0 pb-16">
       
-      {/* HEADER */}
-      <div className="bg-white p-5 rounded-xl border border-gray-300 shadow-sm text-center">
-        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-          INTERIM REPORT FOR ACADEMIC ACCREDITATION EXERCISE OF PROSTHETICS AND ORTHOTICS PROGRAMME FOR THE MEDICAL REHABILITATION BOARD
-        </h2>
-      </div>
-
-      {/* PREAMBLE */}
-      <div className="bg-white p-5 rounded-xl border border-gray-300 shadow-sm space-y-4">
-        <h3 className="font-bold text-gray-950 uppercase tracking-wide flex items-center gap-2 pb-1.5 border-b border-gray-200">
-          <Truck size={14} /> PREAMBLE/INTRODUCTION
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
-            <label className="font-bold text-gray-600 block">Date</label>
-            <input type="text" value={visitationDate || "Not Scheduled"} readOnly className="w-full mt-1 px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded text-gray-500 font-semibold cursor-not-allowed" />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="font-bold text-gray-600 block">Accreditation Team Members</label>
-            <input type="text" value={fieldTeamMembers} readOnly className="w-full mt-1 px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded text-gray-500 font-semibold cursor-not-allowed" />
+      {/* 1. ACADEMIC MATTERS */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-150 shadow-xs space-y-3.5">
+        <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-lg bg-[#EEF6DF] text-[#066936] flex items-center justify-center shrink-0">
+            <BookOpen size={16} />
           </div>
           <div>
-            <label className="font-bold text-gray-600 block">Mode of travel</label>
-            <input type="text" value={preamble.modeOfTravel} onChange={(e) => handleFieldUpdate(setPreamble, 'modeOfTravel', e.target.value)} className="w-full mt-1 p-1.5 border border-gray-300 rounded bg-white" />
-          </div>
-          <div>
-            <label className="font-bold text-gray-600 block">Arrival date</label>
-            <input type="date" value={preamble.arrivalDate} onChange={(e) => handleFieldUpdate(setPreamble, 'arrivalDate', e.target.value)} className="w-full mt-1 p-1 border border-gray-300 rounded bg-white" />
-          </div>
-          <div>
-            <label className="font-bold text-gray-600 block">Arrival Time</label>
-            <input type="time" value={preamble.arrivalTime} onChange={(e) => handleFieldUpdate(setPreamble, 'arrivalTime', e.target.value)} className="w-full mt-1 p-1 border border-gray-300 rounded bg-white" />
-          </div>
-          <div>
-            <label className="font-bold text-gray-600 block">Place of reception</label>
-            <input type="text" value={preamble.placeOfReception} onChange={(e) => handleFieldUpdate(setPreamble, 'placeOfReception', e.target.value)} className="w-full mt-1 p-1.5 border border-gray-300 rounded bg-white" />
-          </div>
-          
-          <div className="sm:col-span-2">
-            <label className="font-bold text-gray-600 block">Type of reception:</label>
-            <div className="flex gap-4 mt-2 font-semibold items-center flex-wrap">
-              <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={preamble.typeWarm} onChange={(e) => setPreamble(p => ({ ...p, typeWarm: e.target.checked, typeCordial: false, typeHostile: false, typeOthersChecked: false }))} className="rounded text-purple-900 w-3.5 h-3.5" /> Warm</label>
-              <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={preamble.typeCordial} onChange={(e) => setPreamble(p => ({ ...p, typeCordial: e.target.checked, typeWarm: false, typeHostile: false, typeOthersChecked: false }))} className="rounded text-purple-900 w-3.5 h-3.5" /> Cordial</label>
-              <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={preamble.typeHostile} onChange={(e) => setPreamble(p => ({ ...p, typeHostile: e.target.checked, typeWarm: false, typeCordial: false, typeOthersChecked: false }))} className="rounded text-purple-900 w-3.5 h-3.5" /> Hostile</label>
-              <label className="flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={preamble.typeOthersChecked} onChange={(e) => setPreamble(p => ({ ...p, typeOthersChecked: e.target.checked, typeWarm: false, typeCordial: false, typeHostile: false }))} className="rounded text-purple-900 w-3.5 h-3.5" /> Others, please specify</label>
-            </div>
-          </div>
-          {preamble.typeOthersChecked && (
-            <div className="sm:col-span-3">
-              <input type="text" value={preamble.typeOthersText} onChange={(e) => handleFieldUpdate(setPreamble, 'typeOthersText', e.target.value)} className="w-full p-1.5 border border-purple-300 rounded bg-white outline-none font-bold text-purple-950" placeholder="Specify reception particulars..." />
-            </div>
-          )}
-        </div>
-
-        <div className="border-t border-gray-200 pt-3 space-y-3">
-          <span className="font-bold text-gray-900 block uppercase tracking-wide text-[10px]">The Institution</span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="font-bold text-gray-600 block">Name of Institution</label>
-              <input type="text" value={institutionName} readOnly className="w-full mt-1 p-1.5 border border-gray-200 bg-gray-50 rounded text-gray-500 font-bold cursor-not-allowed" />
-            </div>
-            <div>
-              <label className="font-bold text-gray-600 block">Program to be Accredited</label>
-              <input type="text" value={preamble.programToAccredit} onChange={(e) => handleFieldUpdate(setPreamble, 'programToAccredit', e.target.value)} className="w-full mt-1 p-1.5 border border-gray-300 rounded bg-white" />
-            </div>
-            
-            <div className="sm:col-span-2 space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="font-bold text-gray-700 block">Representatives of Institution:</label>
-                <button type="button" onClick={() => setRepresentatives(p => [...p, ""])} className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-950 font-bold text-[10px] rounded-lg flex items-center gap-1 transition-all"><Plus size={12} /> Add Line</button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {representatives.map((rep, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5">
-                    <span className="font-bold text-gray-400 w-4 text-right">{idx + 1}.</span>
-                    <input type="text" value={rep} onChange={(e) => updateRepValue(idx, e.target.value)} className="flex-1 p-1.5 border border-gray-300 rounded outline-none font-semibold bg-white" placeholder="Enter full name..." />
-                    {representatives.length > 3 && (
-                      <button type="button" onClick={() => setRepresentatives(p => p.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={13} /></button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <h3 className="text-sm font-bold text-gray-900 tracking-tight">1. Academic Matters & Curriculum</h3>
+            <p className="text-xs text-gray-500 font-normal">Evaluate curriculum structure, progression rules, and academic policies.</p>
           </div>
         </div>
-      </div>
-
-      {/* ACADEMIC MATTERS */}
-      <div className="bg-white p-5 rounded-xl border border-gray-300 shadow-sm space-y-4">
-        <h3 className="font-bold text-gray-950 uppercase tracking-wide flex items-center gap-2 pb-1.5 border-b border-gray-200">
-          <BookOpen size={14} /> 2 ACADEMIC MATTERS (Tick as appropriate)
-        </h3>
         
         <div className="space-y-4 divide-y divide-gray-100 font-semibold text-gray-700">
           {[
@@ -301,7 +220,7 @@ export function ProstheticsOrthoticsAcademicFormStep2({ visitationDate, fieldTea
       {/* STAFFING */}
       <div className="bg-white p-5 rounded-xl border border-gray-300 shadow-sm space-y-4">
         <h3 className="font-bold text-gray-950 uppercase tracking-wide flex items-center gap-2 pb-1.5 border-b border-gray-200">
-          <Users size={14} /> 3 STAFFING
+          <Users size={16} /> 2 STAFFING
         </h3>
         
         <div className="space-y-3">
@@ -415,7 +334,7 @@ export function ProstheticsOrthoticsAcademicFormStep2({ visitationDate, fieldTea
       {/* PHYSICAL FACILITIES */}
       <div className="bg-white p-5 rounded-xl border border-gray-300 shadow-sm space-y-4">
         <h3 className="font-bold text-gray-950 uppercase tracking-wide flex items-center gap-2 pb-1.5 border-b border-gray-200">
-          <Building2 size={14} /> PHYSICAL FACILITIES
+          <Building2 size={16} /> 3 PHYSICAL FACILITIES
         </h3>
 
         {/* SIGN POST */}
@@ -1057,10 +976,9 @@ export function ProstheticsOrthoticsAcademicFormStep2({ visitationDate, fieldTea
       </div>
 
       {/* CLINICAL TRAINING */}
-      {/* CLINICAL TRAINING */}
       <div className="bg-white p-5 rounded-xl border border-gray-300 shadow-sm space-y-4">
         <h3 className="font-bold text-gray-950 uppercase tracking-wide flex items-center gap-2 pb-1.5 border-b border-gray-200">
-          <ClipboardCheck size={14} /> CLINICAL TRAINING
+          <ClipboardCheck size={16} /> 4 CLINICAL TRAINING
         </h3>
 
         {/* TEACHING HOSPITAL */}
@@ -1175,16 +1093,15 @@ export function ProstheticsOrthoticsAcademicFormStep2({ visitationDate, fieldTea
       
       
       
-      
-      {/* FLOATING ACTION BOTTOM NAVIGATOR */}
-      <div className="bg-white border border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)] p-3 sm:p-4 flex flex-row justify-between items-center gap-2 max-w-5xl mx-auto rounded-2xl z-10 mt-8">
+        {/* FLOATING ACTION BOTTOM NAVIGATOR */}
+      <div className="bg-white border border-gray-150 shadow-xs p-3 sm:p-3.5 flex flex-row justify-between items-center gap-2 max-w-5xl mx-auto rounded-2xl z-10 mt-4">
         <button
           type="button"
           onClick={onBack}
-          className="px-2.5 py-2 sm:px-5 sm:py-2.5 border border-gray-300 text-gray-700 bg-gray-50 hover:bg-gray-100 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm text-xs sm:text-sm whitespace-nowrap"
+          className="px-4 py-2 border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs cursor-pointer"
         >
-          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-          Back
+          <ArrowLeft size={13} />
+          <span>Back</span>
         </button>
         
         <div className="flex flex-row gap-2 items-center">
@@ -1193,10 +1110,10 @@ export function ProstheticsOrthoticsAcademicFormStep2({ visitationDate, fieldTea
               type="submit"
               disabled={!isDirty}
               onClick={() => { (window as any)._actionType = 'save'; }}
-              className={`px-2.5 py-2 sm:px-5 sm:py-2.5 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm text-xs sm:text-sm whitespace-nowrap ${!isDirty ? "border border-green-300 text-green-300 opacity-50 cursor-not-allowed" : "border border-green-600 text-green-600 hover:bg-green-50 cursor-pointer"}`}
+              className={`px-4 py-2 font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs cursor-pointer ${!isDirty ? "border border-gray-200 text-gray-400 bg-gray-50 opacity-60 cursor-not-allowed" : "border border-[#5D9C0E] text-[#5D9C0E] hover:bg-[#EEF6DF] bg-white shadow-xs"}`}
             >
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-              Save
+              <Save size={13} />
+              <span>Save Progress</span>
             </button>
           )}
           
@@ -1205,10 +1122,10 @@ export function ProstheticsOrthoticsAcademicFormStep2({ visitationDate, fieldTea
               type="submit"
               disabled={isDirty}
               onClick={() => { (window as any)._actionType = 'proceed'; }}
-              className={`px-2.5 py-2 sm:px-5 sm:py-2.5 text-white font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm text-xs sm:text-sm whitespace-nowrap ${isDirty ? "bg-green-650 opacity-40 cursor-not-allowed" : "bg-green-700 hover:bg-green-800 cursor-pointer"}`}
+              className={`px-5 py-2 text-white font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs shadow-md ${isDirty ? "bg-[#5D9C0E]/50 cursor-not-allowed" : "bg-[#5D9C0E] hover:bg-[#4a7c0b] cursor-pointer"}`}
             >
-              Proceed to Report
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+              <span>Proceed to Report</span>
+              <ArrowRight size={13} />
             </button>
           )}
           
@@ -1216,19 +1133,14 @@ export function ProstheticsOrthoticsAcademicFormStep2({ visitationDate, fieldTea
             <button
               type="button"
               onClick={() => onComplete({ _action: 'proceed' })}
-              className="px-2.5 py-2 sm:px-5 sm:py-2.5 bg-green-700 hover:bg-green-800 text-white font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap"
+              className="px-5 py-2 bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md text-xs cursor-pointer"
             >
-              View Summary Report
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+              <span>View Summary Report</span>
+              <ArrowRight size={13} />
             </button>
           )}
         </div>
       </div>
-
-
-
-
-
 
     </form>
   );

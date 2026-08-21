@@ -258,63 +258,74 @@ export function FormEReportStep3({ assessmentType, step2Data, onComplete, onBack
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-5xl mx-auto text-xs text-gray-800 antialiased font-medium pb-24">
+    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-5xl mx-auto text-xs text-gray-800 antialiased font-normal pb-24">
       {/* HEADER */}
-      <div className="bg-[#5D9C0E] text-white p-6 rounded-2xl shadow-lg text-center border border-[#4a7c0b]">
-        <h2 className="text-base font-extrabold uppercase tracking-widest relative z-10">
-          ACCREDITATION PANEL SUMMARY REPORT
-        </h2>
-        <p className="text-[10px] text-green-200 mt-1 uppercase tracking-wider relative z-10 font-bold">
-          {assessmentType.replace(/_/g, ' ')}
-        </p>
+      <div className="bg-white rounded-2xl border border-gray-150 p-5 md:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#EEF6DF] text-[#066936] flex items-center justify-center shrink-0">
+            <ClipboardCheck size={20} />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-gray-900 tracking-tight">
+              Accreditation Panel Summary Report (Form E)
+            </h2>
+            <p className="text-xs text-gray-400 capitalize">
+              {assessmentType.replace(/_/g, ' ')}
+            </p>
+          </div>
+        </div>
+        <span className="text-[11px] font-medium text-[#066936] bg-[#EEF6DF] border border-[#CDE1B4]/50 px-3 py-1 rounded-full w-max">
+          Final Audit Synthesis
+        </span>
       </div>
 
       {isReadOnly && (
-        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center gap-3 text-amber-800 shadow-sm">
+        <div className="bg-amber-50/80 border border-amber-200/80 p-4 rounded-xl flex items-center gap-3 text-amber-800 shadow-xs">
           <Lock size={18} className="text-amber-600 shrink-0" />
           <div>
-            <p className="font-bold text-xs uppercase tracking-wide">Report Locked (Read-Only Mode)</p>
-            <p className="text-[11px] text-amber-700 mt-0.5">This report has been finalized and submitted to the board. The contents can no longer be edited.</p>
+            <p className="font-semibold text-xs uppercase tracking-wide">Report Locked (Read-Only Mode)</p>
+            <p className="text-[11px] text-amber-700 mt-0.5">This report has been finalized and submitted. Contents are locked for audit preservation.</p>
           </div>
         </div>
       )}
 
       {/* SECTIONS LIST */}
       <div className="space-y-4">
-        <h3 className="font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2 px-1">
-          <FileText size={14} className="text-green-600" /> Summary of Panel Findings
-        </h3>
+        <div className="flex items-center gap-2 px-1">
+          <FileText size={15} className="text-[#5D9C0E]" />
+          <h3 className="font-semibold text-gray-900 text-xs uppercase tracking-wider">Summary of Panel Findings</h3>
+        </div>
         
         {sections.map((sec) => {
           const secData = panelFindings[sec.id] || { title: sec.title, comment: '', recommendation: '' };
           return (
-            <div key={sec.id} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-[0px_4px_16px_rgba(0,0,0,0.02)] space-y-4 hover:border-green-100 transition-colors">
-              <h4 className="font-bold text-gray-950 text-[13px] tracking-wide border-b border-gray-100 pb-2 flex items-center gap-2">
-                <span className="w-1.5 h-3.5 bg-green-600 rounded-full" />
+            <div key={sec.id} className="bg-white p-5 md:p-6 rounded-2xl border border-gray-150 shadow-xs space-y-4 hover:border-gray-200 transition-colors">
+              <h4 className="font-semibold text-gray-900 text-xs tracking-wide border-b border-gray-100 pb-2.5 flex items-center gap-2">
+                <span className="w-1.5 h-3.5 bg-[#5D9C0E] rounded-full" />
                 {sec.title}
               </h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="font-bold text-gray-500 block uppercase tracking-wider text-[9px]">Observations & Comments</label>
+                <div className="space-y-1.5">
+                  <label className="font-medium text-gray-500 block text-[11px]">Observations & Comments</label>
                   <textarea
                     id={`comments-${sec.id}`}
                     value={secData.comment}
                     disabled={isReadOnly}
                     onChange={(e) => handleFieldChange(sec.id, 'comment', e.target.value)}
                     placeholder="Enter overall observations..."
-                    className="w-full p-3 border border-gray-200 focus:border-green-500 focus:ring-1 focus:ring-green-400 rounded-xl h-24 resize-none outline-none transition-all bg-gray-50/30 text-gray-800 font-semibold disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full p-3 border border-gray-200 focus:border-[#5D9C0E] focus:ring-1 focus:ring-[#5D9C0E]/20 rounded-xl h-24 resize-none outline-none transition-all bg-gray-50/30 text-gray-800 font-normal disabled:bg-gray-50 disabled:text-gray-400 text-xs"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-gray-500 block uppercase tracking-wider text-[9px]">Deficiencies / Recommendations / Remedies</label>
+                <div className="space-y-1.5">
+                  <label className="font-medium text-gray-500 block text-[11px]">Deficiencies / Recommendations / Remedies</label>
                   <textarea
                     id={`recs-${sec.id}`}
                     value={secData.recommendation}
                     disabled={isReadOnly}
                     onChange={(e) => handleFieldChange(sec.id, 'recommendation', e.target.value)}
                     placeholder="Enter recommended remedies..."
-                    className="w-full p-3 border border-gray-200 focus:border-green-500 focus:ring-1 focus:ring-green-400 rounded-xl h-24 resize-none outline-none transition-all bg-gray-50/30 text-gray-800 font-semibold disabled:bg-gray-50 disabled:text-gray-500"
+                    className="w-full p-3 border border-gray-200 focus:border-[#5D9C0E] focus:ring-1 focus:ring-[#5D9C0E]/20 rounded-xl h-24 resize-none outline-none transition-all bg-gray-50/30 text-gray-800 font-normal disabled:bg-gray-50 disabled:text-gray-400 text-xs"
                   />
                 </div>
               </div>
@@ -324,64 +335,71 @@ export function FormEReportStep3({ assessmentType, step2Data, onComplete, onBack
       </div>
 
       {/* FINAL DECISION MODULE */}
-      <div className="bg-[#5D9C0E] text-white p-5 rounded-2xl border border-[#4a7c0b] shadow-md space-y-4">
-        <h3 className="font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-green-800/40 pb-2 text-[12px]">
-          <Award size={15} className="text-yellow-400" /> Final Accreditation Recommendation
-        </h3>
+      <div className="bg-white p-5 md:p-6 rounded-2xl border border-gray-150 shadow-xs space-y-4">
+        <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <Award size={16} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-tight">Final Accreditation Recommendation</h3>
+            <p className="text-xs text-gray-400 font-normal">Panel determination and recommendation duration.</p>
+          </div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+          <div className="space-y-4">
             <div>
-              <label className="font-bold text-green-100 block mb-1">Accreditation Decision</label>
+              <label className="font-medium text-gray-700 block mb-1 text-xs">Accreditation Decision</label>
               <select
                 id="accreditation-decision"
                 value={decision}
                 disabled={isReadOnly}
                 onChange={(e) => setDecision(e.target.value)}
-                className="w-full p-2.5 bg-white border border-green-700 rounded-xl outline-none text-gray-900 font-bold tracking-wide focus:border-green-600 focus:ring-1 focus:ring-green-500 transition-colors disabled:opacity-75"
+                className="w-full py-2 px-3 bg-white border border-gray-200 focus:border-[#5D9C0E] focus:ring-1 focus:ring-[#5D9C0E]/20 rounded-xl outline-none text-gray-900 font-medium tracking-wide transition-colors disabled:opacity-75 text-xs"
               >
-                <option value="Full Accreditation" className="text-gray-900 font-bold">Full Accreditation</option>
-                <option value="Partial Accreditation" className="text-gray-900 font-bold">Partial Accreditation</option>
-                <option value="Denial" className="text-gray-900 font-bold">Denial (No Accreditation)</option>
+                <option value="Full Accreditation">Full Accreditation</option>
+                <option value="Partial Accreditation">Partial Accreditation</option>
+                <option value="Denial">Denial (No Accreditation)</option>
               </select>
             </div>
             
             {decision !== 'Denial' && (
               <div>
-                <label className="font-bold text-green-100 block mb-1">Duration of Accreditation</label>
+                <label className="font-medium text-gray-700 block mb-1 text-xs">Duration of Accreditation</label>
                 <select
                   id="accreditation-duration"
                   value={duration}
                   disabled={isReadOnly}
                   onChange={(e) => setDuration(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-green-700 rounded-xl outline-none text-gray-900 font-bold focus:border-green-600 focus:ring-1 focus:ring-green-500 transition-colors disabled:opacity-75"
+                  className="w-full py-2 px-3 bg-white border border-gray-200 focus:border-[#5D9C0E] focus:ring-1 focus:ring-[#5D9C0E]/20 rounded-xl outline-none text-gray-900 font-medium transition-colors disabled:opacity-75 text-xs"
                 >
-                  <option value="5" className="text-gray-900 font-bold">5 Years (Standard Full)</option>
-                  <option value="4" className="text-gray-900 font-bold">4 Years</option>
-                  <option value="3" className="text-gray-900 font-bold">3 Years (Standard Partial)</option>
-                  <option value="2" className="text-gray-900 font-bold">2 Years</option>
-                  <option value="1" className="text-gray-900 font-bold">1 Year</option>
+                  <option value="5">5 Years (Standard Full)</option>
+                  <option value="4">4 Years</option>
+                  <option value="3">3 Years (Standard Partial)</option>
+                  <option value="2">2 Years</option>
+                  <option value="1">1 Year</option>
+                  <option value="6 months">Six(6) Months (Partial)</option>
                 </select>
               </div>
             )}
           </div>
 
           {/* PANEL MEMBERS & REPORT DATE */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <label className="font-bold text-green-100 block mb-1 flex items-center justify-between">
+              <label className="font-medium text-gray-700 block mb-1 text-xs flex items-center justify-between">
                 <span>Accreditation Panel Members</span>
                 {!isReadOnly && (
                   <button
                     type="button"
                     onClick={handleAddMember}
-                    className="text-[10px] bg-green-600 hover:bg-green-750 px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 transition-colors border border-green-500/30"
+                    className="text-[10.5px] bg-[#EEF6DF] text-[#066936] hover:bg-[#EEF6DF]/80 px-2.5 py-1 rounded-lg font-medium inline-flex items-center gap-1 transition-colors border border-[#CDE1B4]/50 cursor-pointer"
                   >
-                    <UserPlus size={10} /> Add Member
+                    <UserPlus size={12} /> Add Member
                   </button>
                 )}
               </label>
-              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                 {panelMembers.map((member, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <input
@@ -390,15 +408,15 @@ export function FormEReportStep3({ assessmentType, step2Data, onComplete, onBack
                       value={member}
                       disabled={isReadOnly}
                       onChange={(e) => handleMemberChange(idx, e.target.value)}
-                      className="flex-1 p-2 bg-white border border-green-700 rounded-lg outline-none text-gray-900 font-semibold placeholder-gray-400 disabled:opacity-75"
+                      className="flex-1 py-1.5 px-3 bg-white border border-gray-200 focus:border-[#5D9C0E] focus:ring-1 focus:ring-[#5D9C0E]/20 rounded-lg outline-none text-gray-900 text-xs font-medium placeholder-gray-400 disabled:opacity-75 transition-colors"
                     />
                     {!isReadOnly && panelMembers.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveMember(idx)}
-                        className="text-red-100 hover:text-red-200 hover:bg-green-800 p-1.5 rounded-lg transition-colors border border-green-800"
+                        className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg transition-colors cursor-pointer"
                       >
-                        <Trash size={13} />
+                        <Trash size={14} />
                       </button>
                     )}
                   </div>
@@ -407,31 +425,27 @@ export function FormEReportStep3({ assessmentType, step2Data, onComplete, onBack
             </div>
 
             <div>
-              <label className="font-bold text-green-100 block mb-1">Date of Summary Report</label>
+              <label className="font-medium text-gray-700 block mb-1 text-xs">Date of Summary Report</label>
               <div className="relative">
                 <input
                   type="date"
                   value={reportDate}
                   disabled={isReadOnly}
                   onChange={(e) => setReportDate(e.target.value)}
-                  className="w-full p-2 bg-white border border-green-700 rounded-lg outline-none text-gray-900 font-bold disabled:opacity-75"
+                  className="w-full py-1.5 px-3 bg-white border border-gray-200 focus:border-[#5D9C0E] focus:ring-1 focus:ring-[#5D9C0E]/20 rounded-lg outline-none text-gray-900 text-xs font-medium disabled:opacity-75 transition-colors"
                 />
-                <Calendar size={14} className="absolute right-3 top-2.5 text-gray-500 pointer-events-none" />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      
-      
-      
       {/* FLOATING ACTION BOTTOM NAVIGATOR */}
-      <div className="bg-white border border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.02)] p-3 sm:p-4 flex flex-row justify-between items-center gap-2 max-w-5xl mx-auto rounded-2xl z-10 mt-8">
+      <div className="bg-white border border-gray-150 shadow-xs p-3.5 sm:p-4 flex flex-row justify-between items-center gap-2 max-w-5xl mx-auto rounded-2xl z-10 mt-6">
         <button
           type="button"
           onClick={onBack}
-          className="px-2.5 py-2 sm:px-5 sm:py-2.5 border border-gray-300 text-gray-700 bg-gray-50 hover:bg-gray-100 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm text-xs sm:text-sm whitespace-nowrap"
+          className="px-4 py-2.5 border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs cursor-pointer"
         >
           <ChevronLeft size={14} /> Back
         </button>
@@ -442,7 +456,7 @@ export function FormEReportStep3({ assessmentType, step2Data, onComplete, onBack
               <button
                 type="button"
                 onClick={handleSaveProgress}
-                className="px-3 py-2 sm:px-6 sm:py-2.5 bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm text-xs sm:text-sm whitespace-nowrap"
+                className="px-5 py-2.5 bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-xs text-xs cursor-pointer"
               >
                 Save Report Changes
               </button>
@@ -452,14 +466,14 @@ export function FormEReportStep3({ assessmentType, step2Data, onComplete, onBack
                   <button
                     type="button"
                     onClick={handleSaveProgress}
-                    className="px-3 py-2 sm:px-6 sm:py-2.5 border border-[#5D9C0E] text-[#5D9C0E] hover:bg-[#EEF6DF] font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm text-xs sm:text-sm whitespace-nowrap"
+                    className="px-5 py-2.5 border border-[#5D9C0E] text-[#5D9C0E] hover:bg-[#EEF6DF] font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-xs text-xs cursor-pointer"
                   >
                     Save Progress
                   </button>
                 )}
                 <button
                   type="submit"
-                  className="px-3 py-2 sm:px-6 sm:py-2.5 bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm uppercase tracking-wider text-xs sm:text-sm whitespace-nowrap"
+                  className="px-6 py-2.5 bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md text-xs cursor-pointer"
                 >
                   <ShieldAlert size={14} /> {adminRole === 'admin_reviewer' ? 'Forward to Registrar' : 'Final Submit'}
                 </button>
@@ -468,8 +482,6 @@ export function FormEReportStep3({ assessmentType, step2Data, onComplete, onBack
           </div>
         )}
       </div>
-
-
 
     </form>
   );

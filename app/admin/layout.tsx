@@ -62,17 +62,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Link
         href={path}
         onClick={() => setIsMobileMenuOpen(false)}
-        className={`flex items-center w-full transition-all duration-300 rounded-xl ${
-          isExpanded || isMobileMenuOpen ? "px-4 py-3.5 gap-4" : "justify-center p-3.5 gap-0"
+        className={`flex items-center w-full transition-all duration-200 rounded-xl ${
+          isExpanded || isMobileMenuOpen ? "px-3.5 py-2.5 gap-3" : "justify-center p-2.5 gap-0"
         } ${
           active
-            ? "bg-white/20 text-white font-semibold shadow-sm"
-            : "text-white/80 hover:text-white hover:bg-white/10"
+            ? "bg-white text-[#5D9C0E] font-medium shadow-sm"
+            : "text-white/85 hover:text-white hover:bg-white/10 font-normal"
         }`}
       >
         <div className="shrink-0">{icon}</div>
         {(isExpanded || isMobileMenuOpen) && (
-          <span className="text-[15px] font-normal whitespace-nowrap overflow-hidden tracking-wide animate-in fade-in duration-300">
+          <span className="text-[13.5px] whitespace-nowrap overflow-hidden tracking-tight animate-in fade-in duration-200">
             {label}
           </span>
         )}
@@ -109,63 +109,63 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* SIDEBAR */}
         <aside
-          className={`absolute md:relative inset-y-0 left-0 transform transition-all duration-300 ease-in-out bg-[#5D9C0E] h-full flex flex-col py-6 z-50 shrink-0 shadow-2xl md:shadow-none ${
+          className={`absolute md:relative inset-y-0 left-0 transform transition-all duration-300 ease-in-out bg-[#5D9C0E] h-full flex flex-col py-5 z-50 shrink-0 shadow-2xl md:shadow-none ${
             isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 ${
-            isExpanded || isMobileMenuOpen ? "w-[260px]" : "w-[88px]"
+            isExpanded || isMobileMenuOpen ? "w-[240px]" : "w-[76px]"
           }`}
         >
-          <div className="flex flex-col w-full px-4 gap-8 overflow-y-auto no-scrollbar">
+          <div className="flex flex-col w-full px-3 gap-6 overflow-y-auto no-scrollbar">
             
             {/* Header (Hamburger + MENU) */}
             <button
-              className={`text-white hover:opacity-80 transition-opacity flex items-center h-10 ${
-                isExpanded || isMobileMenuOpen ? "px-2 w-full justify-start gap-4" : "justify-center w-full"
+              className={`text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all flex items-center h-9 cursor-pointer ${
+                isExpanded || isMobileMenuOpen ? "px-3 w-full justify-start gap-3" : "justify-center w-full"
               }`}
               onClick={() => {
                 if (window.innerWidth < 768) setIsMobileMenuOpen(!isMobileMenuOpen);
                 else setIsExpanded(!isExpanded);
               }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                 <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="14" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
               </svg>
               {(isExpanded || isMobileMenuOpen) && (
-                <span className="font-normal text-[17px] tracking-wide uppercase">MENU</span>
+                <span className="font-semibold text-xs tracking-wider uppercase text-white/90">Menu</span>
               )}
             </button>
 
             {/* Nav Items */}
-            <div className="w-full flex flex-col gap-2">
-              <SidebarItem label="Dashboard" path="/admin/dashboard" icon={<LayoutDashboard size={22} />} />
-              <SidebarItem label="All Applications" path="/admin/applications" icon={<ClipboardList size={22} />} />
+            <div className="w-full flex flex-col gap-1">
+              <SidebarItem label="Dashboard" path="/admin/dashboard" icon={<LayoutDashboard size={18} />} />
+              <SidebarItem label="All Applications" path="/admin/applications" icon={<ClipboardList size={18} />} />
               
               {/* Conditionally reveal Manage Admins to Super Admin only */}
               {adminRole === 'admin_reviewer' && (
-                <SidebarItem label="Manage Admins" path="/admin/manage-admins" icon={<Users size={22} />} />
+                <SidebarItem label="Manage Admins" path="/admin/manage-admins" icon={<Users size={18} />} />
               )}
 
-              <SidebarItem label="Inspection Calendar" path="/admin/schedule" icon={<CalendarDays size={22} />} />
-              <SidebarItem label="System Analytics" path="/admin/analytics" icon={<BarChart3 size={22} />} />
-              <SidebarItem label="Support Inbox" path="/admin/messages" icon={<MessageSquare size={22} />} />
+              <SidebarItem label="Inspection Calendar" path="/admin/schedule" icon={<CalendarDays size={18} />} />
+              <SidebarItem label="System Analytics" path="/admin/analytics" icon={<BarChart3 size={18} />} />
+              <SidebarItem label="Support Inbox" path="/admin/messages" icon={<MessageSquare size={18} />} />
               
-              <div className={`border-t border-white/20 my-4 mx-auto transition-all duration-300 ${isExpanded || isMobileMenuOpen ? "w-full" : "w-10"}`}></div>
+              <div className={`border-t border-white/15 my-2 mx-auto transition-all duration-300 ${isExpanded || isMobileMenuOpen ? "w-full" : "w-8"}`}></div>
               
-              <SidebarItem label="Profile Settings" path="/admin/settings" icon={<Settings size={22} />} />
+              <SidebarItem label="Profile Settings" path="/admin/settings" icon={<Settings size={18} />} />
             </div>
           </div>
 
           {/* Logout button at the bottom */}
-          <div className={`w-full px-4 mt-auto pt-4 flex ${isExpanded || isMobileMenuOpen ? "justify-start" : "justify-center"}`}>
+          <div className={`w-full px-3 mt-auto pt-4 flex ${isExpanded || isMobileMenuOpen ? "justify-start" : "justify-center"}`}>
             <button 
               onClick={handleLogout}
-              className={`bg-[#4d820c] hover:bg-[#3f6b09] transition rounded-xl text-white/95 shadow-sm flex items-center gap-4 ${
-                isExpanded || isMobileMenuOpen ? "px-4 py-3.5 w-full" : "p-3.5"
+              className={`bg-black/10 hover:bg-black/20 transition-all rounded-xl text-white/90 flex items-center gap-3 cursor-pointer border border-white/10 ${
+                isExpanded || isMobileMenuOpen ? "px-3.5 py-2.5 w-full" : "p-2.5"
               }`}
               title="Log Out"
             >
-              <LogOut size={20} className="shrink-0" />
-              {(isExpanded || isMobileMenuOpen) && <span className="text-[15px] font-normal tracking-wide">Log Out</span>}
+              <LogOut size={17} className="shrink-0" />
+              {(isExpanded || isMobileMenuOpen) && <span className="text-[13px] font-normal tracking-tight">Log Out</span>}
             </button>
           </div>
         </aside>

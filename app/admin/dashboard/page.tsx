@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link'; 
 import { Calendar, Bell, Download, Building2, CalendarDays, Loader2, Filter, AlertCircle, CheckCircle2, Users, LogOut, XCircle, ClipboardCheck, FileText, AlertTriangle } from 'lucide-react';
@@ -40,6 +40,48 @@ export default function AdminDashboard() {
   // Custom Confirmation state
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
 
+  const fetchApplications = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
+    const token = localStorage.getItem('adminAccessToken') || sessionStorage.getItem('adminAccessToken');
+    
+    if (!token) {
+      router.push('/admin/login');
+      return;
+    }
+    
+    const role = localStorage.getItem('adminRole') || sessionStorage.getItem('adminRole') || localStorage.getItem('role') || '';
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/applications`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setApplications(data.data || []);
+      } else {
+        if (response.status === 401 || response.status === 403) router.push('/admin/login');
+      }
+
+      // Fetch pending admins list to display notifications on dashboard
+      if (role === 'admin_registrar') {
+        const adminsRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/list`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (adminsRes.ok) {
+          const adminsData = await adminsRes.json();
+          const pendingAdmins = (adminsData.data || []).filter((a: any) => a.status === 'pending_approval');
+          setPendingAdminsCount(pendingAdmins.length);
+        }
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      if (showLoading) setIsLoading(false);
+    }
+  }, [router]);
+
   useEffect(() => {
     const role = localStorage.getItem('adminRole') || sessionStorage.getItem('adminRole') || localStorage.getItem('role') || '';
     setAdminRole(role);
@@ -53,48 +95,8 @@ export default function AdminDashboard() {
       return;
     }
 
-    const fetchApplications = async () => {
-      setIsLoading(true);
-      const token = localStorage.getItem('adminAccessToken') || sessionStorage.getItem('adminAccessToken');
-      
-      if (!token) {
-        router.push('/admin/login');
-        return;
-      }
-      
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/applications`, {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setApplications(data.data || []);
-        } else {
-          if (response.status === 401 || response.status === 403) router.push('/admin/login');
-        }
-
-        // Fetch pending admins list to display notifications on dashboard
-        if (role === 'admin_registrar') {
-          const adminsRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/entity/admin/list`, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
-          });
-          if (adminsRes.ok) {
-            const adminsData = await adminsRes.json();
-            const pendingAdmins = (adminsData.data || []).filter((a: any) => a.status === 'pending_approval');
-            setPendingAdminsCount(pendingAdmins.length);
-          }
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchApplications();
-  }, [router]);
+    fetchApplications(true);
+  }, [router, fetchApplications]);
 
   const handleLogout = () => {
     setShowConfirmLogout(true);
@@ -266,105 +268,107 @@ export default function AdminDashboard() {
     <div className="pb-12 relative w-full">
       
       {/* TOP NAVIGATION */}
-      <div className="flex justify-end items-center mb-6 gap-2 md:gap-5 w-full">
+      <div className="flex justify-end items-center mb-6 gap-2 sm:gap-3 w-full">
         {(adminRole === 'admin_reviewer' || adminRole === 'admin_registrar') && (
           <Link 
             href="/admin/manage-admins"
-            className="hidden md:flex items-center gap-2 bg-white px-4 h-[52px] rounded-full shadow-sm hover:shadow-md transition-shadow border border-gray-100 font-bold text-[13px] text-gray-700"
+            className="hidden sm:flex items-center gap-2 bg-white px-3.5 h-9 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200/80 font-medium text-xs text-gray-700"
           >
-            <Users size={18} className="text-[#65A30D]" /> 
-            {adminRole === 'admin_registrar' ? 'Approve Admins' : 'Manage Admins'}
+            <Users size={14} className="text-[#066936]" /> 
+            <span>{adminRole === 'admin_registrar' ? 'Approve Admins' : 'Manage Admins'}</span>
           </Link>
         )}
 
-        <button className="w-[38px] h-[38px] md:w-[52px] md:h-[52px] bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow shrink-0">
-          <Calendar size={18} className="text-[#65A30D] md:w-5 md:h-5" />
+        <button className="w-9 h-9 bg-white rounded-xl flex items-center justify-center border border-gray-200/80 hover:bg-gray-50 text-gray-600 transition-colors shrink-0 cursor-pointer">
+          <Calendar size={15} className="text-[#066936]" />
         </button>
-        <button className="relative w-[38px] h-[38px] md:w-[52px] md:h-[52px] bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow shrink-0">
-          <Bell size={18} className="text-[#65A30D] md:w-5 md:h-5" />
-          <span className="absolute top-2 right-2 md:top-2.5 md:right-2.5 w-2 h-2 md:w-2.5 md:h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+        <button className="relative w-9 h-9 bg-white rounded-xl flex items-center justify-center border border-gray-200/80 hover:bg-gray-50 text-gray-600 transition-colors shrink-0 cursor-pointer">
+          <Bell size={15} className="text-[#066936]" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
         </button>
         
-        <div className="bg-white rounded-full p-1 md:p-1.5 pr-3 md:pr-5 flex items-center gap-2 md:gap-3 shadow-sm hover:shadow-md transition-shadow shrink-0">
-          <div className={`w-[30px] h-[30px] md:w-[42px] md:h-[42px] rounded-full flex items-center justify-center text-white ${adminRole === 'admin_registrar' ? 'bg-[#0f172a]' : 'bg-[#65A30D]'}`}>
-            <Building2 size={14} className="md:w-[18px] md:h-[18px]" />
+        <div className="bg-white rounded-xl h-9 px-2.5 flex items-center gap-2 border border-gray-200/80 shrink-0">
+          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-white shrink-0 ${adminRole === 'admin_registrar' ? 'bg-[#0f172a]' : 'bg-[#066936]'}`}>
+            <Building2 size={12} />
           </div>
-          <div className="flex flex-col pr-1 md:pr-2 hidden sm:flex">
-            <span className="text-xs md:text-sm font-bold text-gray-800 leading-tight">
+          <div className="flex flex-col pr-1 hidden sm:flex">
+            <span className="text-[11.5px] font-medium text-gray-800 leading-tight">
               {adminRole === 'admin_registrar' ? 'Registrar' : (adminRole === 'admin_reviewer' && adminEmail === 'admin@mrtb.gov.ng') ? 'Super Admin' : adminRole === 'admin_reviewer' ? 'Reviewer' : 'Super Admin'}
             </span>
-            <span className="text-[10px] md:text-[11px] text-gray-400">Portal Access</span>
+            <span className="text-[9.5px] text-gray-400 font-normal">Portal Access</span>
           </div>
         </div>
 
-        <button onClick={handleLogout} className="flex items-center gap-1.5 md:gap-2 bg-red-50 text-red-600 px-3 md:px-4 h-[38px] md:h-[52px] rounded-full shadow-sm hover:bg-red-100 hover:shadow-md transition-all border border-red-100 font-bold text-xs md:text-[13px] shrink-0">
-          <LogOut size={14} className="md:w-4 md:h-4" />
+        <button onClick={handleLogout} className="flex items-center gap-1.5 bg-red-50/70 hover:bg-red-100 text-red-600 px-3 h-9 rounded-xl transition-colors border border-red-100 font-medium text-xs shrink-0 cursor-pointer">
+          <LogOut size={13} />
           <span className="hidden sm:inline">Logout</span>
         </button>
       </div>
 
       {/* HEADER SECTION */}
-      <div className="bg-white rounded-[20px] md:rounded-[24px] mb-6 p-5 md:p-8 flex flex-col lg:flex-row justify-between items-start lg:items-center shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] w-full">
+      <div className="bg-white rounded-2xl md:rounded-3xl mb-6 p-5 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-gray-100 w-full">
         <div>
-          <h1 className="text-xl md:text-3xl font-bold text-gray-900 mb-1.5 md:mb-2 tracking-tight">Welcome back</h1>
-          <p className="text-xs md:text-sm text-gray-600 font-medium">
+          <h1 className="text-lg md:text-xl font-semibold text-gray-900 tracking-tight">Welcome back</h1>
+          <p className="text-xs text-gray-400 font-normal mt-0.5">
             {adminRole === 'admin_registrar' ? 'Finalize and approve scheduled visitations.' : 'Review new applications and prepare cost estimates.'}
           </p>
         </div>
         
-        <div className="flex w-full lg:w-auto items-center gap-2 md:gap-4 mt-5 lg:mt-0">
-          <button className="flex-1 lg:flex-none flex items-center justify-center gap-1.5 md:gap-2 border-2 border-dashed border-gray-300 text-gray-500 px-3 py-2 md:px-5 md:py-2.5 rounded-full hover:border-gray-400 font-bold text-[11px] md:text-[13px] transition-colors whitespace-nowrap">
-             <CalendarDays size={14} className="md:w-4 md:h-4" /> <span className="hidden sm:inline">Jan 15 - Till date</span><span className="sm:hidden">Jan 15 - Today</span>
+        <div className="flex w-full sm:w-auto items-center gap-2.5">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 border border-gray-200/80 bg-gray-50/50 text-gray-600 px-3.5 h-9 rounded-xl hover:bg-gray-100/60 font-normal text-xs transition-colors whitespace-nowrap cursor-pointer">
+             <CalendarDays size={13} className="text-gray-400" /> 
+             <span className="hidden sm:inline">Jan 15 - Till date</span>
+             <span className="sm:hidden">Jan 15 - Today</span>
           </button>
           <button 
             onClick={handleDownloadCheckedReport}
-            className="flex-1 lg:flex-none flex items-center justify-center gap-1.5 md:gap-2 bg-[#65A30D] text-white px-4 py-2 md:px-8 md:py-3 rounded-full shadow-lg font-bold text-[11px] md:text-[13px] hover:bg-[#578d0b] transition-colors whitespace-nowrap"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white px-4 h-9 rounded-xl font-medium text-xs transition-colors whitespace-nowrap cursor-pointer shadow-sm"
           >
-            <Download size={14} className="md:w-4 md:h-4" /> Download report
+            <Download size={13} /> Download report
           </button>
         </div>
       </div>
 
       {/* SMART TABS */}
-      <div className="mb-5 md:mb-6 flex flex-wrap gap-2 md:gap-4 w-full justify-center">
-        <button onClick={() => {setActiveTab('action_required'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'action_required' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
-          <AlertCircle size={14} /> Action Required
+      <div className="mb-5 md:mb-6 flex flex-wrap gap-2 md:gap-3 w-full justify-center">
+        <button onClick={() => {setActiveTab('action_required'); setCurrentFilter('all');}} className={`relative px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${activeTab === 'action_required' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+          <AlertCircle size={13} /> Action Required
           {actionRequiredCount > 0 && (
             <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'action_required' ? 'bg-white text-[#5D9C0E]' : 'bg-red-100 text-red-650'}`}>{actionRequiredCount}</span>
           )}
         </button>
 
         {adminRole === 'admin_reviewer' && (
-          <button onClick={() => {setActiveTab('awaiting_registrar'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'awaiting_registrar' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
-            <AlertCircle size={14} /> Awaiting Registrar
+          <button onClick={() => {setActiveTab('awaiting_registrar'); setCurrentFilter('all');}} className={`relative px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${activeTab === 'awaiting_registrar' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+            <AlertCircle size={13} /> Awaiting Registrar
             {awaitingRegistrarCount > 0 && (
               <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'awaiting_registrar' ? 'bg-white text-blue-600' : 'bg-blue-50 text-blue-600'}`}>{awaitingRegistrarCount}</span>
             )}
           </button>
         )}
         
-        <button onClick={() => {setActiveTab('rejected'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'rejected' ? 'bg-red-50 text-red-600 border border-red-250 shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
-          <XCircle size={14} /> Rejected
+        <button onClick={() => {setActiveTab('rejected'); setCurrentFilter('all');}} className={`relative px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${activeTab === 'rejected' ? 'bg-red-50 text-red-600 border border-red-250' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+          <XCircle size={13} /> Rejected
           {rejectedCount > 0 && (
             <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'rejected' ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-600'}`}>{rejectedCount}</span>
           )}
         </button>
 
-        <button onClick={() => {setActiveTab('field_reports'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'field_reports' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
-          <ClipboardCheck size={14} /> Reports
+        <button onClick={() => {setActiveTab('field_reports'); setCurrentFilter('all');}} className={`relative px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${activeTab === 'field_reports' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+          <ClipboardCheck size={13} /> Reports
           {fieldReportsCount > 0 && (
             <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'field_reports' ? 'bg-white text-[#5D9C0E]' : 'bg-[#EEF6DF] text-[#5D9C0E]'}`}>{fieldReportsCount}</span>
           )}
         </button>
 
-        <button onClick={() => {setActiveTab('scheduled'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'scheduled' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
-          <CalendarDays size={14} /> Inspection Scheduled
+        <button onClick={() => {setActiveTab('scheduled'); setCurrentFilter('all');}} className={`relative px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${activeTab === 'scheduled' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+          <CalendarDays size={13} /> Inspection Scheduled
           {scheduledCount > 0 && (
             <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'scheduled' ? 'bg-white text-[#5D9C0E]' : 'bg-[#EEF6DF] text-[#5D9C0E]'}`}>{scheduledCount}</span>
           )}
         </button>
 
-        <button onClick={() => {setActiveTab('all'); setCurrentFilter('all');}} className={`relative px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all ${activeTab === 'all' ? 'bg-[#5D9C0E] text-white shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
+        <button onClick={() => {setActiveTab('all'); setCurrentFilter('all');}} className={`relative px-4 py-2 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all ${activeTab === 'all' ? 'bg-[#5D9C0E] text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`}>
           All Applications
           {applications.length > 0 && (
             <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] ${activeTab === 'all' ? 'bg-white text-[#5D9C0E]' : 'bg-[#EEF6DF] text-[#5D9C0E]'}`}>{applications.length}</span>
@@ -373,7 +377,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* DATA TABLE SECTION */}
-      <div className="bg-white rounded-[20px] md:rounded-[24px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.02)] overflow-hidden min-h-[400px] w-full border border-gray-100">
+      <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden min-h-[400px] w-full border border-gray-100">
         <div className="overflow-x-auto pb-4 md:pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="min-w-[800px] lg:min-w-[1050px]">
             
@@ -408,18 +412,18 @@ export default function AdminDashboard() {
                 <div className="mx-6 md:mx-8 mt-4 mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-300">
                   <div className="flex items-center gap-3">
                     <div className="bg-amber-100 p-2 rounded-xl text-amber-600 shrink-0">
-                      <Users size={20} />
+                      <Users size={18} />
                     </div>
                     <div>
-                      <h4 className="text-amber-800 font-extrabold text-[14px] leading-tight">Admin Approval Required</h4>
-                      <p className="text-amber-750 text-[12px] font-medium mt-0.5">
+                      <h4 className="text-amber-800 font-semibold text-[14px] leading-tight">Admin Approval Required</h4>
+                      <p className="text-amber-750 text-[12px] font-normal mt-0.5">
                         There are {pendingAdminsCount} administrator account(s) pending your review and approval.
                       </p>
                     </div>
                   </div>
                   <Link 
                     href="/admin/manage-admins"
-                    className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-5 py-2.5 rounded-full transition-all shadow-sm shrink-0 uppercase tracking-wider"
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs px-4 py-2 rounded-full transition-all shrink-0"
                   >
                     Manage Admins
                   </Link>
@@ -428,9 +432,9 @@ export default function AdminDashboard() {
 
               {finalFilteredApplications.length === 0 ? (
                 <div className="text-center py-16 flex flex-col items-center">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4"><CheckCircle2 size={32} className="text-gray-300" /></div>
-                  <h3 className="text-gray-900 font-bold text-lg mb-1">You're all caught up!</h3>
-                  <p className="text-gray-500 text-sm font-medium">No applications match the current filter.</p>
+                  <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mb-3"><CheckCircle2 size={28} className="text-gray-300" /></div>
+                  <h3 className="text-gray-900 font-semibold text-base mb-1">You're all caught up!</h3>
+                  <p className="text-gray-500 text-xs font-normal">No applications match the current filter.</p>
                 </div>
               ) : (
                 finalFilteredApplications.map((row, index) => (
@@ -445,22 +449,22 @@ export default function AdminDashboard() {
                     </div>
                     
                     <div onClick={() => setSelectedUserId(row.id)} className="w-[180px] md:w-[240px] cursor-pointer pr-2 flex flex-col items-start gap-1">
-                      <span className="text-[14px] md:text-[15px] text-[#65A30D] hover:underline font-bold leading-tight">{row.name}</span>
+                      <span className="text-[13.5px] md:text-[14.5px] text-[#65A30D] hover:underline font-semibold leading-tight">{row.name}</span>
                       {isActionRequired(row) && (
-                        <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border ${row.is_appeal ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-[#EEF6DF] border-[#65A30D]/30 text-[#65A30D]'}`}>
+                        <span className={`px-2 py-0.5 rounded text-[8px] font-medium uppercase tracking-wider border ${row.is_appeal ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-[#EEF6DF] border-[#65A30D]/30 text-[#65A30D]'}`}>
                           {row.is_appeal ? 'Appeal Application' : 'New Application'}
                         </span>
                       )}
                     </div>
                     
-                    <div className="w-[140px] md:w-[160px] text-[13px] md:text-[14px] text-gray-500 font-medium">{row.profession}</div>
+                    <div className="w-[140px] md:w-[160px] text-[13px] md:text-[14px] text-gray-500 font-normal">{row.profession}</div>
                     
                     <div className="flex-1 pr-2">{formatStatus(row.status, row.assessment_status, row.is_paid, row.has_finalized_report)}</div>
                     
                     <div className="pr-4">
                       <button 
                         onClick={() => setSelectedUserId(row.id)} 
-                        className="px-4 py-1.5 md:px-6 md:py-2 border border-gray-200 rounded-full text-xs md:text-[13px] font-bold text-[#65A30D] hover:bg-[#EEF6DF] transition-colors shadow-sm"
+                        className="px-4 py-1.5 md:px-5 md:py-1.5 border border-gray-200 rounded-full text-xs font-medium text-[#65A30D] hover:bg-[#EEF6DF] transition-colors"
                       >
                         Review
                       </button>
@@ -478,31 +482,31 @@ export default function AdminDashboard() {
           userId={selectedUserId} 
           adminRole={adminRole}
           onClose={() => setSelectedUserId(null)}
-          onRefreshTable={() => window.location.reload()}
+          onRefreshTable={() => fetchApplications(false)}
         />
       )}
 
       {/* CUSTOM CONFIRMATION OVERLAY */}
       {showConfirmLogout && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm px-4">
-          <div className="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-[280px] animate-in zoom-in-95 duration-200 border border-gray-100 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-3 border border-amber-100 text-amber-500">
-              <AlertTriangle size={20} />
+          <div className="bg-white p-6 rounded-2xl w-full max-w-[280px] animate-in zoom-in-95 duration-200 border border-gray-100 text-center flex flex-col items-center">
+            <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center mb-3 border border-amber-100 text-amber-500">
+              <AlertTriangle size={18} />
             </div>
-            <h3 className="text-[13px] font-bold text-gray-900 mb-1.5">Secure Logout</h3>
-            <p className="text-[11px] text-gray-500 mb-5 leading-relaxed font-medium">
+            <h3 className="text-[13px] font-semibold text-gray-900 mb-1">Secure Logout</h3>
+            <p className="text-[11px] text-gray-500 mb-4 leading-relaxed font-normal">
               Are you sure you want to securely log out of your session?
             </p>
             <div className="flex gap-2.5 w-full">
               <button 
                 onClick={() => setShowConfirmLogout(false)} 
-                className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 font-bold text-[11px] hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 font-medium text-[11px] hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button 
                 onClick={confirmLogoutAction} 
-                className="flex-1 py-2 rounded-xl bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-bold text-[11px] shadow-sm transition-all"
+                className="flex-1 py-2 rounded-xl bg-[#5D9C0E] hover:bg-[#4a7c0b] text-white font-medium text-[11px] transition-all"
               >
                 Confirm
               </button>

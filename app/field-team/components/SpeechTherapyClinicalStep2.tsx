@@ -105,18 +105,18 @@ export function SpeechTherapyClinicalStep2({ spacesData, equipmentData, assessme
     }
   }, [inspectionReport]);
   return (
-    <div className="space-y-8 w-full text-xs text-gray-800 antialiased font-medium animate-in fade-in duration-200">
-      <fieldset disabled={isReadOnly} className="contents">
+    <div className="space-y-6 w-full text-xs text-gray-800 antialiased font-medium animate-in fade-in duration-200">
+      <fieldset disabled={isReadOnly} className="space-y-6 w-full block border-0 p-0 m-0 min-w-0">
       
       {/* =======================================================================
           A. EVALUATION OF CONCEPTS AND APPROACHES (TOP OF PAGE)
           ======================================================================= */}
       <div className="bg-white p-4 sm:p-5 rounded-xl border border-gray-300 shadow-sm space-y-3">
         <div>
-          <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide flex items-center gap-1.5 pb-1 border-b border-gray-200">
-            <ClipboardCheck size={14} /> Evaluation of Concepts and Approaches Across Specialties
+          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2 pb-1.5 border-b border-gray-200">
+            <ClipboardCheck size={16} /> Evaluation of Concepts and Approaches Across Specialties
           </h3>
-          <p className="text-[11px] text-gray-400 mt-1 font-medium">Please provide the various concepts and approaches used for assessment, evaluation and treatment in the various specialty areas available.</p>
+          <p className="text-xs text-gray-400 mt-1 font-medium">Please provide the various concepts and approaches used for assessment, evaluation and treatment in the various specialty areas available.</p>
         </div>
 
         <div className="overflow-x-auto w-full">
@@ -175,8 +175,8 @@ export function SpeechTherapyClinicalStep2({ spacesData, equipmentData, assessme
           B. SPACE EVALUATION TABLES (OVERALL COMMENT REMOVED)
           ======================================================================= */}
       <div className="w-full space-y-6">
-        <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide flex items-center gap-1.5 mb-2">
-          <Building2 size={14} /> Space Evaluation
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2 mb-2">
+          <Building2 size={16} /> Space Evaluation
         </h3>
         
         {spacesGroups.map((group, groupIdx) => {
@@ -249,8 +249,8 @@ export function SpeechTherapyClinicalStep2({ spacesData, equipmentData, assessme
           C. EQUIPMENT INVENTORY TABLES WITH DISTINCT QUANTITY EXAMINED FIELD
           ======================================================================= */}
       <div className="w-full space-y-6">
-        <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide flex items-center gap-1.5 mb-2">
-          <Wrench size={14} /> Equipment Inventory
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2 mb-2">
+          <Wrench size={16} /> Equipment Inventory
         </h3>
         
         {equipmentGroups.map((group, groupIdx) => {

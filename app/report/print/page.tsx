@@ -148,13 +148,32 @@ function PrintReportContent() {
   const s2 = inspectionReport?.step2;
   const s3 = inspectionReport?.step3;
 
-  // Helper mappings for step 2 questionnaire options picked
-  const getTravelMode = () => s2?.preamble?.modeOfTravel || "";
+  // Helper mappings for preamble & visit info across both step1 (new) and step2 (legacy) records
+  const preambleObj = s1?.preamble || s2?.preamble;
+  const travelObj = s1?.travelInfo || s2?.travelInfo;
+  const repsList: string[] = Array.isArray(s1?.representatives) ? s1.representatives : Array.isArray(s2?.representatives) ? s2.representatives : [];
+
+  const getTravelMode = () => preambleObj?.modeOfTravel || travelObj?.modeOfTravel || "";
   const getArrivalDateTime = () => {
-    if (!s2?.preamble?.arrivalDate) return "";
-    return `${s2.preamble.arrivalDate} at ${s2.preamble.arrivalTime || ""}`;
+    const date = preambleObj?.arrivalDate || travelObj?.arrivalDate;
+    const time = preambleObj?.arrivalTime || travelObj?.arrivalTime;
+    if (!date) return "";
+    return `${date}${time ? ` at ${time}` : ''}`;
   };
-  const getProgram = () => s2?.preamble?.programToAccredit || "";
+  const getProgram = () => preambleObj?.programToAccredit || "";
+  const getPlaceOfReception = () => preambleObj?.placeOfReception || travelObj?.placeOfReception || "";
+  const getTypeOfReception = () => {
+    if (preambleObj) {
+      if (preambleObj.typeWarm) return "Warm";
+      if (preambleObj.typeCordial) return "Cordial";
+      if (preambleObj.typeHostile) return "Hostile";
+      if (preambleObj.typeOthersChecked) return preambleObj.typeOthersText ? `Others (${preambleObj.typeOthersText})` : "Others";
+    }
+    if (travelObj?.typeOfReception) {
+      return `${travelObj.typeOfReception}${travelObj.typeOfReceptionOthers ? ` (${travelObj.typeOfReceptionOthers})` : ''}`;
+    }
+    return "";
+  };
 
   const getAcademicConforms = () => s2?.academic?.aYes ? "Yes" : s2?.academic?.aNo ? "No" : "";
   const getAdmissionConforms = () => s2?.academic?.bYes ? "Yes" : s2?.academic?.bNo ? "No" : "";
@@ -250,7 +269,7 @@ function PrintReportContent() {
       <div className="space-y-10">
         
         {/* I. PREAMBLE & VISIT INFORMATION */}
-        {((s2?.preamble) || (s1?.travelInfo || s2?.travelInfo)) && (
+        {(preambleObj || travelObj) && (
           <div className="space-y-4">
             <h2 className="text-sm font-bold uppercase text-[#066936] border-b-2 border-[#5D9C0E] pb-1.5">I. Preamble & Visit Information</h2>
             <div className="grid grid-cols-2 gap-4 text-xs font-semibold">
@@ -263,21 +282,21 @@ function PrintReportContent() {
               {getProgram() && (
                 <div className="col-span-2"><span className="text-gray-500">Program to Accredit:</span> <span className="text-gray-900">{getProgram()}</span></div>
               )}
-              {(s1?.travelInfo?.placeOfReception || s2?.travelInfo?.placeOfReception) && (
-                <div><span className="text-gray-500">Place of Reception:</span> <span className="text-gray-900">{s1?.travelInfo?.placeOfReception || s2?.travelInfo?.placeOfReception}</span></div>
+              {getPlaceOfReception() && (
+                <div><span className="text-gray-500">Place of Reception:</span> <span className="text-gray-900">{getPlaceOfReception()}</span></div>
               )}
-              {(s1?.travelInfo?.typeOfReception || s2?.travelInfo?.typeOfReception) && (
-                <div><span className="text-gray-500">Type of Reception:</span> <span className="text-gray-900">{s1?.travelInfo?.typeOfReception || s2?.travelInfo?.typeOfReception} {s1?.travelInfo?.typeOfReceptionOthers || s2?.travelInfo?.typeOfReceptionOthers ? `(${s1?.travelInfo?.typeOfReceptionOthers || s2?.travelInfo?.typeOfReceptionOthers})` : ""}</span></div>
+              {getTypeOfReception() && (
+                <div><span className="text-gray-500">Type of Reception:</span> <span className="text-gray-900">{getTypeOfReception()}</span></div>
               )}
             </div>
 
             {/* Representatives */}
-            {((s2?.representatives && s2.representatives.length > 0) || (s1?.travelInfo?.representatives || s2?.travelInfo?.representatives)) && (
+            {(repsList.length > 0 || (s1?.travelInfo?.representatives || s2?.travelInfo?.representatives)) && (
               <div className="pt-3">
                 <h3 className="text-xs font-bold text-gray-700 mb-1.5">Facility Representatives Present during Visitation:</h3>
-                {s2?.representatives && Array.isArray(s2.representatives) ? (
+                {repsList.length > 0 ? (
                   <ol className="list-decimal pl-5 text-xs text-gray-800 space-y-1 font-semibold">
-                    {s2.representatives.filter((r: string) => r && r.trim() !== "").map((rep: string, idx: number) => (
+                    {repsList.filter((r: string) => r && r.trim() !== "").map((rep: string, idx: number) => (
                       <li key={idx}>{rep}</li>
                     ))}
                   </ol>

@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+.font-old-english {
+  font-family: 'UnifrakturMaguntia', 'Cinzel Decorative', Georgia, serif;
+}
+
+.font-cert-script {
+  font-family: 'Great Vibes', 'Alex Brush', 'Italianno', cursive;
+}
+
+.font-cert-calligraphy {
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+}
+
+.font-cert-heading {
+  font-family: 'Cinzel', Georgia, serif;
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
@@ -88,45 +104,6 @@ button.bg-gray-900 {
 }
 button.bg-gray-900:hover {
   background-color: #4a7c0b !important;
-}
-
-/* Style Step 1 section headers to look like badges with ample spacing */
-.max-w-5xl h3.uppercase {
-  background-color: #EEF6DF !important;
-  color: #066936 !important;
-  padding: 0.5rem 1.25rem !important;
-  border-radius: 0.75rem !important;
-  font-size: 0.75rem !important; /* text-xs */
-  font-weight: 800 !important; /* font-extrabold */
-  letter-spacing: 0.05em !important;
-  width: fit-content !important;
-  margin-top: 3.5rem !important; /* Space between sections */
-  margin-bottom: 1.25rem !important;
-  border: 1px solid rgba(205, 225, 180, 0.4) !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-}
-
-/* Style Step 2 form section headers to look like badges with ample spacing */
-form h3,
-form div.bg-green-700.text-white, 
-form div.bg-green-800.text-white,
-form div.bg-green-900.text-white {
-  background-color: #EEF6DF !important;
-  color: #066936 !important;
-  font-weight: 800 !important;
-  text-transform: uppercase !important;
-  border-radius: 0.75rem !important;
-  border: 1px solid rgba(205, 225, 180, 0.5) !important;
-  padding: 0.625rem 1.5rem !important;
-  width: fit-content !important;
-  margin: 4.5rem auto 1.75rem auto !important; /* Center and give wide space */
-  font-size: 0.8125rem !important;
-  letter-spacing: 0.05em !important;
-  display: block !important;
-  text-align: center !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Ensure step containers flow cleanly with proper padding */

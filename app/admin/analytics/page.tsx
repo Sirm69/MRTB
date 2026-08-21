@@ -85,9 +85,9 @@ function AnalyticsContent() {
   return (
     <>
       {/* Page Title */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">System Analytics</h1>
-        <p className="text-sm text-gray-500">Real-time metrics on facility registrations, progress metrics, and fees collection</p>
+      <div className="mb-6 pb-4 border-b border-gray-100">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 tracking-tight">System Analytics</h1>
+        <p className="text-xs text-gray-400 font-normal mt-0.5">Real-time metrics on facility registrations, progress metrics, and fees collection</p>
       </div>
 
       {isLoading ? (
@@ -98,70 +98,70 @@ function AnalyticsContent() {
         <div className="space-y-6">
           
           {/* Summary Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 w-full">
             {/* Metric 1 */}
-            <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-              <div className="bg-[#EEF6DF] text-[#5D9C0E] p-3.5 rounded-2xl shrink-0">
-                <Users size={22} />
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 border border-gray-100 flex items-center gap-4">
+              <div className="bg-[#EEF6DF] text-[#066936] p-3 rounded-xl shrink-0">
+                <Users size={20} />
               </div>
               <div className="leading-tight">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Total Registered</span>
-                <span className="text-2xl font-black text-gray-800">{totalRegistrations}</span>
+                <span className="text-[10px] font-medium text-gray-400 block mb-0.5">Total Registered</span>
+                <span className="text-2xl font-semibold text-gray-900">{totalRegistrations}</span>
               </div>
             </div>
 
             {/* Metric 2 */}
-            <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-              <div className="bg-[#EEF6DF] text-[#5D9C0E] p-3.5 rounded-2xl shrink-0">
-                <Activity size={22} />
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 border border-gray-100 flex items-center gap-4">
+              <div className="bg-[#EEF6DF] text-[#066936] p-3 rounded-xl shrink-0">
+                <Activity size={20} />
               </div>
               <div className="leading-tight">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Pending Review</span>
-                <span className="text-2xl font-black text-gray-800">{pendingAudits}</span>
+                <span className="text-[10px] font-medium text-gray-400 block mb-0.5">Pending Review</span>
+                <span className="text-2xl font-semibold text-gray-900">{pendingAudits}</span>
               </div>
             </div>
 
             {/* Metric 3 */}
-            <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-              <div className="bg-[#EEF6DF] text-[#5D9C0E] p-3.5 rounded-2xl shrink-0">
-                <FileCheck2 size={22} />
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 border border-gray-100 flex items-center gap-4">
+              <div className="bg-[#EEF6DF] text-[#066936] p-3 rounded-xl shrink-0">
+                <FileCheck2 size={20} />
               </div>
               <div className="leading-tight">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Licensed Facilities</span>
-                <span className="text-2xl font-black text-gray-800">{approvedAccreditation}</span>
+                <span className="text-[10px] font-medium text-gray-400 block mb-0.5">Licensed Facilities</span>
+                <span className="text-2xl font-semibold text-gray-900">{approvedAccreditation}</span>
               </div>
             </div>
 
             {/* Metric 4 */}
-            <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
-              <div className="bg-[#EEF6DF] text-[#5D9C0E] p-3.5 rounded-2xl shrink-0">
-                <DollarSign size={22} />
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 border border-gray-100 flex items-center gap-4">
+              <div className="bg-[#EEF6DF] text-[#066936] p-3 rounded-xl shrink-0">
+                <DollarSign size={20} />
               </div>
               <div className="leading-tight">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Fees Collected</span>
-                <span className="text-xl font-black text-gray-800">₦{calculatedRevenue.toLocaleString()}</span>
+                <span className="text-[10px] font-medium text-gray-400 block mb-0.5">Fees Collected</span>
+                <span className="text-xl font-semibold text-gray-900">₦{calculatedRevenue.toLocaleString()}</span>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
             {/* Left: Discipline distribution chart */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 md:col-span-2">
-              <h3 className="text-base font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <BarChart3 size={18} className="text-[#5D9C0E]" /> Registrations per Clinical Specialty
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 sm:p-6 border border-gray-100 md:col-span-2">
+              <h3 className="text-sm font-semibold text-gray-800 mb-5 flex items-center gap-2">
+                <BarChart3 size={16} className="text-[#5D9C0E]" /> Registrations per Clinical Specialty
               </h3>
               <div className="space-y-4">
                 {professions.map((prof, idx) => {
                   const count = getProfCount(prof);
                   const pct = totalRegistrations > 0 ? (count / totalRegistrations) * 100 : 0;
                   return (
-                    <div key={idx} className="space-y-1.5 text-xs font-semibold text-gray-700">
+                    <div key={idx} className="space-y-1 text-xs font-normal text-gray-700">
                       <div className="flex justify-between">
-                        <span>{prof}</span>
+                        <span className="font-medium text-gray-800">{prof}</span>
                         <span className="text-gray-400">{count} ({pct.toFixed(0)}%)</span>
                       </div>
-                      <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
-                        <div className="bg-[#5D9C0E] h-full" style={{ width: `${pct}%` }}></div>
+                      <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                        <div className="bg-[#5D9C0E] h-full rounded-full" style={{ width: `${pct}%` }}></div>
                       </div>
                     </div>
                   );
@@ -170,41 +170,41 @@ function AnalyticsContent() {
             </div>
 
             {/* Right: Category Distribution */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 sm:p-6 border border-gray-100 flex flex-col justify-between">
               <div>
-                <h3 className="text-base font-bold text-gray-800 mb-6">Sector Breakdown</h3>
-                <div className="space-y-4 text-xs font-semibold">
+                <h3 className="text-sm font-semibold text-gray-800 mb-5">Sector Breakdown</h3>
+                <div className="space-y-3 text-xs">
                   {/* Clinical */}
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                  <div className="flex justify-between items-center p-3 bg-gray-50/70 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="bg-emerald-50 text-emerald-600 p-2 rounded-xl">
-                        <Briefcase size={16} />
+                      <div className="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
+                        <Briefcase size={15} />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-800">Clinical Tiers</p>
-                        <p className="text-[10px] text-gray-400">Hospitals, Private Practices</p>
+                        <p className="font-medium text-gray-800">Clinical Tiers</p>
+                        <p className="text-[10px] text-gray-400 font-normal">Hospitals, Private Practices</p>
                       </div>
                     </div>
-                    <span className="text-sm font-black text-gray-800">{categoriesData.clinical}</span>
+                    <span className="text-sm font-semibold text-gray-900">{categoriesData.clinical}</span>
                   </div>
 
                   {/* Academic */}
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                  <div className="flex justify-between items-center p-3 bg-gray-50/70 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="bg-blue-50 text-blue-600 p-2 rounded-xl">
-                        <GraduationCap size={16} />
+                      <div className="bg-blue-50 text-blue-600 p-2 rounded-lg">
+                        <GraduationCap size={15} />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-800">Academic Tiers</p>
-                        <p className="text-[10px] text-gray-400">Universities, Training Centers</p>
+                        <p className="font-medium text-gray-800">Academic Tiers</p>
+                        <p className="text-[10px] text-gray-400 font-normal">Universities, Training Centers</p>
                       </div>
                     </div>
-                    <span className="text-sm font-black text-gray-800">{categoriesData.academic}</span>
+                    <span className="text-sm font-semibold text-gray-900">{categoriesData.academic}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-4 mt-6 text-[10px] text-gray-400 leading-relaxed">
+              <div className="border-t border-gray-100 pt-3.5 mt-5 text-[10.5px] text-gray-400 font-normal leading-relaxed">
                 * Sector breakdown is loaded dynamically based on registered categories compiled from pre-assessment logs.
               </div>
             </div>
